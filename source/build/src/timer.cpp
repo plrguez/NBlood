@@ -19,9 +19,11 @@
 
 #if defined RENDERTYPESDL && (SDL_MAJOR_VERSION >= 2)
 # define HAVE_TIMER_SDL
+#elif defined __OPENDINGUX__
+# define HAVE_TIMER_OD
 #endif
 
-#if !defined _WIN32 && !defined HAVE_TIMER_SDL && !defined HAVE_TIMER_RDTSC
+#if !defined _WIN32 && !defined HAVE_TIMER_SDL && !defined HAVE_TIMER_RDTSC && !defined HAVE_TIMER_OD
 # error No platform timer implementation!
 #endif
 
@@ -103,6 +105,79 @@ static FORCE_INLINE ATTRIBUTE((flatten)) uint64_t timerSampleRDTSC(void)
 }
 #endif
 
+#ifdef HAVE_TIMER_OD
+#include <time.h>
+
+/* The first ticks value of the application */
+static struct timespec start_ts;
+static bool has_monotonic_time = false;
+static struct timeval start_tv;
+static bool ticks_started = false;
+
+void
+OD_TicksInit(void)
+{
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = true;
+
+    /* Set first ticks value */
+    if (clock_gettime(CLOCK_TYPE, &start_ts) == 0) {
+        has_monotonic_time = true;
+    } else {
+        gettimeofday(&start_tv, NULL);
+    }
+}
+
+void
+OD_TicksQuit(void)
+{
+    ticks_started = false;
+}
+
+uint64_t
+OD_GetPerformanceCounter(void)
+{
+    uint64_t ticks;
+    if (!ticks_started) {
+        OD_TicksInit();
+    }
+
+    if (has_monotonic_time) {
+        struct timespec now;
+
+        clock_gettime(CLOCK_TYPE, &now);
+        ticks = now.tv_sec;
+        ticks *= 1000000000;
+        ticks += now.tv_nsec;
+        ticks = 0;
+    } else {
+        struct timeval now;
+
+        gettimeofday(&now, NULL);
+        ticks = now.tv_sec;
+        ticks *= 1000000;
+        ticks += now.tv_usec;
+    }
+    return (ticks);
+}
+
+uint64_t
+OD_GetPerformanceFrequency(void)
+{
+    if (!ticks_started) {
+        OD_TicksInit();
+    }
+
+    if (has_monotonic_time) {
+        return 1000000000;
+    } 
+        
+    return 1000000;
+}
+#endif
+
 
 // returns ticks since epoch in the format and frequency specified
 template<typename T> T timerGetTicks(T freq)
@@ -151,6 +226,10 @@ static inline int timerGetCounterType(void)
         case TIMER_SDL:
             return TIMER_SDL;
 #endif // HAVE_TIMER_SDL
+#ifdef HAVE_TIMER_OD
+        case TIMER_OD:
+            return TIMER_OD;
+#endif
 #ifdef _WIN32
 #if !defined HAVE_TIMER_SDL
         default:
@@ -178,6 +257,9 @@ uint64_t timerGetPerformanceCounter(void)
 #ifdef HAVE_TIMER_SDL
         case TIMER_SDL: return SDL_GetPerformanceCounter();
 #endif
+#ifdef HAVE_TIMER_OD
+        case TIMER_OD: return OD_GetPerformanceCounter();
+#endif
 #ifdef _WIN32
         case TIMER_QPC:
         {
@@ -200,6 +282,9 @@ uint64_t timerGetPerformanceFrequency(void)
 #ifdef HAVE_TIMER_SDL
         case TIMER_SDL: return SDL_GetPerformanceFrequency();
 #endif
+#ifdef HAVE_TIMER_OD
+        case TIMER_SDL: return OD_GetPerformanceFrequency();
+#endif
 #ifdef _WIN32
         case TIMER_QPC:
         {
@@ -216,7 +301,7 @@ uint64_t timerGetPerformanceFrequency(void)
 
 static int osdcmd_sys_timer(osdcmdptr_t parm)
 {
-    static char constexpr const *s[] = { "auto", "QPC", "SDL", "RDTSC" };
+    static char constexpr const *s[] = { "auto", "QPC", "SDL", "RDTSC", "RFW" };
     int const r = osdcmd_cvar_set(parm);
 
     if (r != OSDCMD_OK)
@@ -228,6 +313,10 @@ static int osdcmd_sys_timer(osdcmdptr_t parm)
 #endif
 #ifndef HAVE_TIMER_SDL
     if (sys_timer == TIMER_SDL)
+        sys_timer = TIMER_AUTO;
+#endif
+#ifndef HAVE_TIMER_OD
+    if (sys_timer == TIMER_OD)
         sys_timer = TIMER_AUTO;
 #endif
 #ifndef HAVE_TIMER_RDTSC
@@ -269,12 +358,18 @@ int timerInit(int const tickspersecond)
 #ifdef HAVE_TIMER_RDTSC
                                                 "   3: CPU RDTSC instruction\n"
 #endif
+#ifdef HAVE_TIMER_OD
+                                                "   4: RFW_GetPerformanceCounter\n"
+#endif
                                                 , (void *)&sys_timer, CVAR_INT | CVAR_FUNCPTR, 0, 4 };
 
         OSD_RegisterCvar(&sys_timer_cvar, osdcmd_sys_timer);
 
 #ifdef HAVE_TIMER_SDL
         SDL_InitSubSystem(SDL_INIT_TIMER);
+#endif
+#ifdef HAVE_TIMER_OD
+        //RFW_InitTimer();
 #endif
 #ifdef HAVE_TIMER_RDTSC
         if (tsc_freq == 0)

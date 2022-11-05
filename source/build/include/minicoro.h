@@ -1168,12 +1168,15 @@ static void _mco_wrap_main(unsigned int lo) {
 #endif
 
 static MCO_FORCE_INLINE void _mco_switch(_mco_ctxbuf* from, _mco_ctxbuf* to) {
+#ifndef __OPENDINGUX__
   int res = swapcontext(from, to);
   _MCO_UNUSED(res);
   MCO_ASSERT(res == 0);
+#endif
 }
 
 static mco_result _mco_makectx(mco_coro* co, _mco_ctxbuf* ctx, void* stack_base, size_t stack_size) {
+#ifndef __OPENDINGUX__
   /* Initialize ucontext. */
   if(getcontext(ctx) != 0) {
     MCO_LOG("failed to get ucontext");
@@ -1190,6 +1193,7 @@ static mco_result _mco_makectx(mco_coro* co, _mco_ctxbuf* ctx, void* stack_base,
   makecontext(ctx, (void (*)(void))_mco_wrap_main, 1, lo);
 #endif
   return MCO_SUCCESS;
+#endif
 }
 
 #endif /* defined(MCO_USE_UCONTEXT) */

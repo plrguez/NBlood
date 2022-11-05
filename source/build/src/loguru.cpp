@@ -109,7 +109,9 @@
 #if LOGURU_STACKTRACES
 	#include <cxxabi.h>    // for __cxa_demangle
 	#include <dlfcn.h>     // for dladdr
+#ifndef __OPENDINGUX__
 	#include <execinfo.h>  // for backtrace
+#endif
 #endif // LOGURU_STACKTRACES
 
 #if LOGURU_PTHREADS
@@ -1267,6 +1269,7 @@ namespace loguru
 
 	std::string stacktrace_as_stdstring(int skip)
 	{
+#ifndef __OPENDINGUX__
 		// From https://gist.github.com/fmela/591333
 		void* callstack[128];
 		const auto max_frames = sizeof(callstack) / sizeof(callstack[0]);
@@ -1307,6 +1310,7 @@ namespace loguru
 		}
 
 		return prettify_stacktrace(result);
+#endif
 	}
 
 #else // LOGURU_STACKTRACES
