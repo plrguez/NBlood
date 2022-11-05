@@ -44,7 +44,7 @@ endif
 
 ifndef SUBPLATFORM
     SUBPLATFORM :=
-    ifeq ($(PLATFORM),$(filter $(PLATFORM),LINUX DINGOO GCW CAANOO))
+    ifeq ($(PLATFORM),$(filter $(PLATFORM),LINUX DINGOO GCW CAANOO RETROFW))
         SUBPLATFORM := LINUX
     endif
 endif
@@ -209,7 +209,7 @@ ifeq ($(AS),as)
     override AS := nasm
 endif
 
-ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
+ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW RETROFW))
     CROSS := mipsel-linux-
 endif
 
@@ -381,9 +381,12 @@ else ifeq ($(PLATFORM),WII)
     override HAVE_GTK2 := 0
     override HAVE_FLAC := 0
     SDL_TARGET := 1
-else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
+else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW RETROFW))
     override USE_OPENGL := 0
     override NOASM := 1
+    override HAVE_FLAC := 0
+    override HAVE_GTK2 := 0
+    override NETCODE := 0
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),BEOS))
     override NOASM := 1
 endif
@@ -532,6 +535,8 @@ else ifeq ($(PLATFORM),WII)
     LIBDIRS += -L$(LIBOGC_LIB)
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
     COMPILERFLAGS += -D__OPENDINGUX__
+else ifeq ($(PLATFORM),$(filter $(PLATFORM),RETROFW))
+    COMPILERFLAGS += -D__OPENDINGUX__ -D__RETROFW__
 else ifeq ($(SUBPLATFORM),LINUX)
     # Locate .so files
     LINKERFLAGS += -Wl,-rpath,'$$ORIGIN' -Wl,-z,origin
@@ -877,11 +882,16 @@ ifneq (0,$(HAVE_XMP))
 endif
 
 ifeq ($(RENDERTYPE),SDL)
+    SDL_CONFIG_PATH :=
+    ifeq ($(PLATFORM),$(filter $(PLATFORM),GCW RETROFW))
+        SYSROOT         := $(shell $(CC) --print-sysroot)
+        SDL_CONFIG_PATH := $(SYSROOT)/usr/bin/
+    endif
     ifeq ($(SDL_TARGET),2)
-        SDLCONFIG := sdl2-config
+        SDLCONFIG := $(SDL_CONFIG_PATH)sdl2-config
         SDLNAME := SDL2
     else ifeq ($(SDL_TARGET),1)
-        SDLCONFIG := sdl-config
+        SDLCONFIG := $(SDL_CONFIG_PATH)sdl-config
         SDLNAME := SDL
         ifeq (0,$(RELEASE))
             COMPILERFLAGS += -DNOSDLPARACHUTE

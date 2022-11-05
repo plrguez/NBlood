@@ -740,7 +740,11 @@ duke3d_game_orderonlydeps :=
 duke3d_editor_orderonlydeps :=
 
 ifeq ($(SUBPLATFORM),LINUX)
-    LIBS += -lFLAC -lasound
+    ifeq ($(HAVE_FLAC),0)
+	LIBS += -lasound
+    else
+	LIBS += -lFLAC -lasound
+    endif
 endif
 
 ifeq ($(PLATFORM),BSD)
