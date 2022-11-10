@@ -384,7 +384,11 @@ else ifeq ($(PLATFORM),WII)
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW RETROFW))
     override USE_OPENGL := 0
     override NOASM := 1
-    override HAVE_FLAC := 0
+    ifeq ($(PLATFORM),GCW)
+        override HAVE_FLAC := 1
+    else
+        override HAVE_FLAC := 0
+    endif
     override HAVE_GTK2 := 0
     override NETCODE := 0
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),BEOS))
