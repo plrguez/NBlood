@@ -2157,7 +2157,11 @@ void SetupOptionsSound(CGameMenuItemChain *pItem)
     itemOptionsSound3DToggle.at20 = gStereo;
     itemOptionsSoundCDToggle.at20 = CDAudioToggle;
     itemOptionsSoundSampleRate.m_nFocus = 0;
+#ifdef __OPENDINGUX__
+    for (int i = 0; i < (int)ARRAY_SIZE(nSoundRateValues); i++)
+#else
     for (int i = 0; i < 3; i++)
+#endif
     {
         if (nSoundRateValues[i] == MixRate)
         {

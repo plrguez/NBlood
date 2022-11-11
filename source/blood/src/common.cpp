@@ -322,6 +322,11 @@ void G_AddSearchPaths(void)
 
     addsearchpath("/usr/share/games/nblood");
     addsearchpath("/usr/local/share/games/nblood");
+#if defined __OPENDINGUX__ && !defined __RETROFW__
+    addsearchpath("/media/sdcard/nblood");
+#elif defined __RETROFW__
+    addsearchpath("/media/mmcblk0p1/nblood");
+#endif
 #elif defined EDUKE32_OSX
     char buf[BMAX_PATH];
     int32_t i;

@@ -5,7 +5,15 @@
 
 #include <SDL/SDL_events.h>
 
+#if defined __OPENDINGUX__
+#ifdef __RETROFW__
+#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE|SDL_HWACCEL)
+#else
+#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE)
+#endif
+#else
 #define SURFACE_FLAGS	(SDL_SWSURFACE|SDL_HWPALETTE|SDL_HWACCEL|SDL_RESIZABLE)
+#endif
 
 #ifdef _WIN32
 #include "winbits.h"
@@ -234,11 +242,20 @@ void videoGetModes(int display)
         }
         else
         {
+#if defined __OPENDINGUX__ && !defined __RETROFW__
+            SDL_ADDMODE(640, 480, cdepths[j], 1);
+            SDL_ADDMODE(640, 400, cdepths[j], 1);
+            SDL_ADDMODE(512, 384, cdepths[j], 1);
+            SDL_ADDMODE(320, 240, cdepths[j], 1);
+            SDL_ADDMODE(320, 200, cdepths[j], 1);
+            maxx = 640;
+            maxy = 480;
+#else
             for (i = 0; modes[i]; i++)
             {
                 if (!SDL_CHECKMODE(modes[i]->w, modes[i]->h))
                     continue;
-
+                
                 SDL_ADDMODE(modes[i]->w, modes[i]->h, cdepths[j], 1);
 
                 if ((modes[i]->w > maxx) || (modes[i]->h > maxy))
@@ -247,11 +264,13 @@ void videoGetModes(int display)
                     maxy = modes[i]->h;
                 }
             }
+#endif
         }
     }
 
     SDL_CHECKFSMODES(maxx, maxy);
 
+#if !defined __OPENDINGUX__
     // add windowed modes next
     for (j = 0; cdepths[j]; j++)
     {
@@ -271,6 +290,7 @@ void videoGetModes(int display)
             SDL_ADDMODE(mode.x, mode.y, cdepths[j], 0);
         }
     }
+#endif
 
     qsort((void *)validmode, validmodecnt, sizeof(struct validmode_t), &sortmodes);
 
@@ -390,10 +410,75 @@ int32_t handleevents_pollsdl(void)
         {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
+#if defined __OPENDINGUX__
+                {
+                    // Emulate joystick buttons
+                    // Xbox 360 - Positional buttons (Swapped A/B X/Y)
+                    if (appactive && joystick.numButtons)
+                    {
+                        int button = 12;
+                        switch (ev.key.keysym.sym)
+                        {
+                        case SDLK_LALT: // B
+                            button = 0;
+                            break;
+                        case SDLK_LCTRL: // A
+                            button = 1;
+                            break;
+                        case SDLK_LSHIFT: // y
+                            button = 2;
+                            break;
+                        case SDLK_SPACE: // x
+                            button = 3;
+                            break;
+                        case SDLK_ESCAPE: // Select
+                            button = 6;
+                            break;
+                        case SDLK_RETURN: // Start
+                            button = 7;
+                            break;
+                        case SDLK_TAB: // L1
+                            button = 4;
+                            break;
+                        case SDLK_BACKSPACE: // R1
+                            button = 5;
+                            break;
+                        case SDLK_PAGEUP: // L2
+                            button = 10;
+                            break;
+                        case SDLK_PAGEDOWN: // R2
+                            button = 11;
+                            break;
+                        case SDLK_KP_DIVIDE: // L3
+                            button = 8;
+                            break;
+                        case SDLK_KP_PERIOD: // R3
+                            button = 9;
+                            break;
+                        default:
+                            break;
+                        }
+                        if (button < 12)
+                        {
+                            if (ev.type == SDL_KEYDOWN)
+                                joystick.bits |= 1 << button;
+                            else
+                                joystick.bits &= ~(1 << button);
+                        }
+                    }
+                }
+#endif
                 code = keytranslation[ev.key.keysym.sym];
 #ifdef KEY_PRINT_DEBUG
                 printf("keytranslation[%d] = %s (%d)  %s\n", ev.key.keysym.sym, g_keyNameTable[code], code,
                        ev.key.type == SDL_KEYDOWN ? "DOWN" : "UP");
+#endif
+#if defined(__OPENDINGUX__) && !defined (__RETROFW__)
+                // In new OpenDingux there is not support for unicode Keysyms
+                if (ev.key.keysym.sym < 128)
+                    ev.key.keysym.unicode = ev.key.keysym.sym;
+                else
+                    ev.key.keysym.unicode = 0xF000 | ev.key.keysym.sym;
 #endif
                 if (code != OSD_OSDKey() && ev.key.keysym.unicode != 0 && ev.key.type == SDL_KEYDOWN &&
                     (ev.key.keysym.unicode & 0xff80) == 0 && !keyBufferFull())

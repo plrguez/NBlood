@@ -275,8 +275,13 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
+#ifdef __OPENDINGUX__
+        gSetup.xdim = 320;
+        gSetup.ydim = 240;
+#else
         gSetup.xdim = 1024;
         gSetup.ydim = 768;
+#endif
     }
 #endif
 
@@ -290,6 +295,8 @@ void CONFIG_SetDefaults(void)
     MixRate = 44100;
 #elif defined __ANDROID__
     MixRate = droidinfo.audio_sample_rate;
+#elif defined __OPENDINGUX__
+    MixRate = 44100;
 #else
     MixRate = 48000;
 #endif
@@ -300,7 +307,7 @@ void CONFIG_SetDefaults(void)
     NumVoices = 64;
 #endif
 
-#ifdef GEKKO
+#if defined GEKKO || defined __OPENDINGUX__
     gSetup.usejoystick = 1;
 #else
     gSetup.usejoystick = 0;
@@ -328,7 +335,11 @@ void CONFIG_SetDefaults(void)
     gBrightness = 8;
     //ud.config.ShowWeapons     = 0;
     SoundToggle     = 1;
+#ifdef __RETROFW__
+    CDAudioToggle = 1;
+#else
     CDAudioToggle = 0;
+#endif
     MusicDevice = ASS_AutoDetect;
     gFMPianoFix = 1;
     //ud.config.VoiceToggle     = 5;  // bitfield, 1 = local, 2 = dummy, 4 = other players in DM
@@ -448,7 +459,7 @@ void CONFIG_SetDefaults(void)
     }
 #endif
 
-#if defined(GEKKO)
+#if defined(GEKKO) || defined(__OPENDINGUX__)
     for (int i=0; i<MAXJOYBUTTONSANDHATS; i++)
     {
         JoystickFunctions[i][0] = CONFIG_FunctionNameToNum(joystickdefaults[i]);
@@ -513,7 +524,11 @@ void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode
 {
     int const keys[] = { key1, key2, oldkey1, oldkey2 };
     char buf[2*MAXGAMEFUNCLEN];
+#ifdef __OPENDINGUX__
+    char tempbuf[1024];
+#else
     char tempbuf[128];
+#endif
 
     if (which == gamefunc_Show_Console)
         OSD_CaptureKey(key1);
@@ -530,7 +545,7 @@ void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode
             if (keys[k] == sctokeylut[match].sc)
                 break;
         }
-
+        
         tempbuf[0] = 0;
 
         for (int i=NUMGAMEFUNCTIONS-1; i>=0; i--)
@@ -554,8 +569,17 @@ void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode
             CONTROL_FreeKeyBind(keys[k]);
         }
     }
+    
+#ifdef __OPENDINGUX__
+    if (KeyboardKeys[which][0] || KeyboardKeys[which][1])
+    {
+        Bsprintf(buf, "gamefunc_%s", CONFIG_FunctionNumToName(which));
+        int const len = Bstrlen(tempbuf);
+        if (len > 0)
+            CONTROL_BindODKey(which, buf, 1, KeyboardKeys[which][0], KeyboardKeys[which][1]);
+    }
+#endif
 }
-
 
 void CONFIG_SetupMouse(void)
 {

@@ -531,7 +531,11 @@ const char *const ConsoleButtons[] =
 
 static int osdcmd_bind(osdcmdptr_t parm)
 {
+#ifdef __OPENDINGUX__
+    char buffer[1024];
+#else
     char buffer[256];
+#endif
     if (parm->numparms==1 && !Bstrcasecmp(parm->parms[0],"showkeys"))
     {
         for (auto & s : sctokeylut)
@@ -668,6 +672,14 @@ static int osdcmd_bind(osdcmdptr_t parm)
 
             if (j == gamefunc_Show_Console)
                 OSD_CaptureKey(sctokeylut[i].sc);
+#ifdef __OPENDINGUX__
+            else
+            {
+                char buf[2*MAXGAMEFUNCLEN];
+                Bsprintf(buf, "gamefunc_%s", CONFIG_FunctionNumToName(j));
+                CONTROL_BindODKey(j, buf, repeat, KeyboardKeys[j][0], KeyboardKeys[j][1]);
+            }
+#endif
         }
     }
 
@@ -683,6 +695,11 @@ static int osdcmd_unbindall(osdcmdptr_t UNUSED(parm))
 
     for (int i = 0; i < MAXBOUNDKEYS; ++i)
         CONTROL_FreeKeyBind(i);
+
+#ifdef __OPENDINGUX__
+    for (int i=0; i<CONTROL_NUM_FLAGS; i++)
+        CONTROL_FreeODKeyBind(i);
+#endif
 
     for (int i = 0; i < MAXMOUSEBUTTONS; ++i)
         CONTROL_FreeMouseBind(i);
@@ -700,12 +717,15 @@ static int osdcmd_unbind(osdcmdptr_t parm)
 {
     if (parm->numparms != 1)
         return OSDCMD_SHOWHELP;
-
+    
     for (auto ConsoleKey : sctokeylut)
     {
         if (ConsoleKey.key && !Bstrcasecmp(parm->parms[0], ConsoleKey.key))
         {
             CONTROL_FreeKeyBind(ConsoleKey.sc);
+#ifdef __OPENDINGUX__
+            CONTROL_FreeODKeyBindFromKey(ConsoleKey.sc);
+#endif
             OSD_Printf("unbound key %s\n", ConsoleKey.key);
             return OSDCMD_OK;
         }
@@ -733,6 +753,10 @@ static int osdcmd_unbound(osdcmdptr_t parm)
 
     if (gameFunc != -1)
         KeyboardKeys[gameFunc][0] = 0;
+    
+#ifdef __OPENDINGUX__
+    CONTROL_FreeODKeyBind(gameFunc);
+#endif
 
     return OSDCMD_OK;
 }

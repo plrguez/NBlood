@@ -102,6 +102,9 @@ static inline void KB_KeyEvent(int32_t scancode, int32_t keypressed)
 static inline void KB_Startup(void) { keySetCallback(KB_KeyEvent); }
 static inline void KB_Shutdown(void) { keySetCallback((void (*)(int32_t, int32_t))NULL); }
 const char *  KB_ScanCodeToString( kb_scancode scancode ); // convert scancode into a string
+#ifdef __OPENDINGUX__
+const char *KB_ScanCodeToODString(kb_scancode scancode);
+#endif
 kb_scancode KB_StringToScanCode( const char * string );  // convert a string into a scancode
 
 #ifdef __cplusplus

@@ -244,6 +244,22 @@ void CONTROL_ClearUserInput(UserInput *);
 #define CONTROL_NUM_FLAGS   64
 extern int32_t CONTROL_ButtonFlags[CONTROL_NUM_FLAGS];
 
+#ifdef __OPENDINGUX__
+typedef struct ConsoleODKeyBind
+{
+    int key1;
+    int key2;
+    char *cmdstr;
+    char repeat;
+    char laststate;
+} ConsoleODKeyBind_t;
+extern ConsoleODKeyBind_t CONTROL_ODKeyBinds[CONTROL_NUM_FLAGS];
+
+void CONTROL_BindODKey(int gameFunction, char const * const cmd, int repeat, int key1, int key2);
+void CONTROL_FreeODKeyBind(int gameFunction);
+void CONTROL_FreeODKeyBindFromKey(int key);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

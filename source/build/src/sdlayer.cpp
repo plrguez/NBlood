@@ -3,6 +3,10 @@
 
 #include <signal.h>
 
+#ifdef __OPENDINGUX__
+#include <libgen.h>
+#endif
+
 #include "a.h"
 #include "build.h"
 #include "cache1d.h"
@@ -475,6 +479,11 @@ int main(int argc, char *argv[])
         while (*wp) wp++;
     }
     argv[argc] = NULL;
+#endif
+    
+#ifdef __OPENDINGUX__
+    // Change cwd to directory where executable is placed
+    chdir(dirname(argv[0]));
 #endif
 
     engineSetupAllocator();
@@ -1007,9 +1016,18 @@ void joyScanDevices()
                 joystick.numBalls   = SDL_JoystickNumBalls(joydev);
                 joystick.numButtons = min(32, SDL_JoystickNumButtons(joydev));
                 joystick.numHats    = min((36 - joystick.numButtons) / 4, SDL_JoystickNumHats(joydev));
+#if defined __OPENDINGUX__ && !defined __RETROFW__
+                // OD Beta do not detect buttons as joystick buttons, so we will emulate it.
+                //joystick.numButtons = 12;
+                // joystick.numHats = 1; // Emulate Hat with PAD
+#endif
 
                 joystick.validButtons = UINT32_MAX;
+#if defined __OPENDINGUX___
+                joystick.isGameController = 1;
+#else
                 joystick.isGameController = 0;
+#endif
 
                 VLOG_F(LOG_INPUT, "Joystick %d has %d axes, %d buttons, %d hats, and %d balls.", i+1, joystick.numAxes, joystick.numButtons, joystick.numHats, joystick.numBalls);
 
@@ -1146,6 +1164,18 @@ const char *joyGetName(int32_t what, int32_t num)
             if ((unsigned)num > (unsigned)joystick.numAxes)
                 return NULL;
 
+#ifdef __OPENDINGUX__
+            static char const * axisStrings[] =
+            {
+                "Left Stick X-Axis",
+                "Left Stick Y-Axis",
+                "Right Stick X-Axis",
+                "Right Stick Y-Axis",
+                NULL
+            };
+
+            Bsprintf(tmp, "%s", axisStrings[num]);
+#else
 #if SDL_MAJOR_VERSION >= 2
             if (controller)
             {
@@ -1165,12 +1195,33 @@ const char *joyGetName(int32_t what, int32_t num)
 #endif
 
             Bsprintf(tmp, "Axis %d", num);
+#endif // OPENDINGUX
             return (char *)tmp;
 
         case 1:  // button
             if ((unsigned)num > (unsigned)joystick.numButtons)
                 return NULL;
-
+            
+#ifdef __OPENDINGUX__
+            static char const * buttonStrings[] =
+            {
+                "B",
+                "A",
+                "Y",
+                "X",
+                "L1",
+                "R1",
+                "Select",
+                "Start",
+                "L3",
+                "R3",
+                "L2",
+                "R2",
+                NULL
+            };
+                
+            Bsprintf(tmp, "Button %s", buttonStrings[num]);
+#else
 #if SDL_MAJOR_VERSION >= 2
             if (controller)
             {
@@ -1205,6 +1256,7 @@ const char *joyGetName(int32_t what, int32_t num)
 #endif
 
             Bsprintf(tmp, "Button %d", num);
+#endif // OPENDINGUX
             return (char *)tmp;
 
         case 2:  // hat

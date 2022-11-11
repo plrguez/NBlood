@@ -75,7 +75,39 @@ void CONTROL_ClearAllBinds(void)
         CONTROL_FreeKeyBind(i);
     for (int i=0; i<MAXMOUSEBUTTONS; i++)
         CONTROL_FreeMouseBind(i);
+#ifdef __OPENDINGUX__
+    for (int i=0; i<CONTROL_NUM_FLAGS; i++)
+        CONTROL_FreeODKeyBind(i);
+#endif
 }
+
+#ifdef __OPENDINGUX__
+ConsoleODKeyBind_t CONTROL_ODKeyBinds[CONTROL_NUM_FLAGS];
+#define BINDOD(x, s, r, k1, k2) do { Xfree(x.cmdstr); x.cmdstr = s; x.repeat = r; x.key1 = k1; x.key2 = k2; } while (0)
+void CONTROL_BindODKey(int gameFunction, char const * const cmd, int repeat, int key1, int key2)
+{
+    BINDOD(CONTROL_ODKeyBinds[gameFunction], Xstrdup(cmd), repeat, key1 == 255 ? 0 : key1, key2 == 255 ? 0 : key2);
+}
+
+void CONTROL_FreeODKeyBind(int gameFunction)
+{
+    BINDOD(CONTROL_ODKeyBinds[gameFunction], NULL, 0, 0, 0);
+}
+
+void CONTROL_FreeODKeyBindFromKey(int key)
+{
+    for (int i = 0; i < CONTROL_NUM_FLAGS; i++)
+    {
+        if (!CONTROL_ODKeyBinds[i].cmdstr)
+            continue;
+
+        if (CONTROL_ODKeyBinds[i].key1 == key)
+            CONTROL_ODKeyBinds[i].key1 = 0;
+        if (CONTROL_ODKeyBinds[i].key2 == key)
+            CONTROL_ODKeyBinds[i].key2 = 0;
+    }
+}
+#endif
 
 void CONTROL_BindKey(int i, char const * const cmd, int repeat, char const * const keyname)
 {
@@ -145,7 +177,11 @@ static int32_t controlKeyboardFunctionPressed(int32_t which)
         r = !!KB_KeyDown[mapped.keyPrimary];
 
     if (mapped.keySecondary != KEYUNDEFINED && !CONTROL_KeyBinds[mapped.keySecondary].cmdstr)
+#ifdef __OPENDINGUX__
+        r &= !!KB_KeyDown[mapped.keySecondary];
+#else
         r |= !!KB_KeyDown[mapped.keySecondary];
+#endif
 
     return r;
 }
@@ -653,6 +689,66 @@ void CONTROL_ProcessBinds(void)
     if (!CONTROL_BindsEnabled)
         return;
 
+#ifdef __OPENDINGUX__
+    bool exclude_single_press[MAXBOUNDKEYS];
+    bool key_pressed[MAXBOUNDKEYS];
+    memset(&exclude_single_press,0,MAXBOUNDKEYS*sizeof(exclude_single_press[0]));
+    memset(&key_pressed,0,MAXBOUNDKEYS*sizeof(key_pressed[0]));
+    {
+        int i = CONTROL_NUM_FLAGS-1;
+        do
+        {
+            if (!CONTROL_ODKeyBinds[i].cmdstr)
+                continue;
+
+            if (CONTROL_ODKeyBinds[i].key1)
+                key_pressed[CONTROL_ODKeyBinds[i].key1] = KB_KeyPressed(CONTROL_ODKeyBinds[i].key1);
+            if (CONTROL_ODKeyBinds[i].key2)
+                key_pressed[CONTROL_ODKeyBinds[i].key2] = KB_KeyPressed(CONTROL_ODKeyBinds[i].key2);
+
+            if (key_pressed[CONTROL_ODKeyBinds[i].key1] && key_pressed[CONTROL_ODKeyBinds[i].key2])
+            {
+                exclude_single_press[CONTROL_ODKeyBinds[i].key1] = true;
+                exclude_single_press[CONTROL_ODKeyBinds[i].key2] = true;
+            }
+        }
+        while (i--);
+    }
+
+    {
+        int i = CONTROL_NUM_FLAGS-1;
+        do
+        {
+            if (!CONTROL_ODKeyBinds[i].cmdstr)
+                continue;
+
+            if (key_pressed[CONTROL_ODKeyBinds[i].key1] && key_pressed[CONTROL_ODKeyBinds[i].key2])
+            {
+                CONTROL_LastSeenInput = LastSeenInput::Keyboard;
+                OSD_Dispatch(CONTROL_ODKeyBinds[i].cmdstr, true);
+                CONTROL_KeyBinds[CONTROL_ODKeyBinds[i].key1].laststate = true;
+                CONTROL_KeyBinds[CONTROL_ODKeyBinds[i].key2].laststate = true;
+            } 
+            else if (!CONTROL_ODKeyBinds[i].key2 && key_pressed[CONTROL_ODKeyBinds[i].key1] && !exclude_single_press[CONTROL_ODKeyBinds[i].key1])
+            {
+                CONTROL_LastSeenInput = LastSeenInput::Keyboard;
+                OSD_Dispatch(CONTROL_ODKeyBinds[i].cmdstr, true);
+                CONTROL_KeyBinds[CONTROL_ODKeyBinds[i].key1].laststate = true;   
+            }
+            else if (!CONTROL_ODKeyBinds[i].key1 && key_pressed[CONTROL_ODKeyBinds[i].key2] && !exclude_single_press[CONTROL_ODKeyBinds[i].key2])
+            {
+                CONTROL_LastSeenInput = LastSeenInput::Keyboard;
+                OSD_Dispatch(CONTROL_ODKeyBinds[i].cmdstr, true);
+                CONTROL_KeyBinds[CONTROL_ODKeyBinds[i].key2].laststate = true;
+            }
+
+            CONTROL_ODKeyBinds[i].laststate = (CONTROL_ODKeyBinds[i].key1 && key_pressed[CONTROL_ODKeyBinds[i].key1]);
+            CONTROL_ODKeyBinds[i].laststate |= ( !CONTROL_ODKeyBinds[i].key2 || (CONTROL_ODKeyBinds[i].key2 && key_pressed[CONTROL_ODKeyBinds[i].key2]) );
+        }
+        while (i--);
+    }
+    return;
+#endif
     int i = MAXBOUNDKEYS-1;
 
     do

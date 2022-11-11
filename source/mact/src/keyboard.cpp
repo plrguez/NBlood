@@ -37,6 +37,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "keyboard.h"
 #include "control.h"
 
+#ifdef __OPENDINGUX__
+#include <string>
+#endif
+
 kb_scancode KB_LastScan;
 
 // this is horrible!
@@ -48,6 +52,46 @@ const char *KB_ScanCodeToString(kb_scancode scancode)
 
     return "";
 }
+
+#ifdef __OPENDINGUX__
+// Only used for print menu
+const char *KB_ScanCodeToODString(kb_scancode scancode)
+{
+    std::string strsc = std::string(KB_ScanCodeToString(scancode));
+    if (strsc == "Escape")
+        return "Select";
+    else if (strsc == "Enter")
+        return "Start";
+    else if (strsc == "BakSpc")
+        return "R1";
+    else if (strsc == "Tab")
+        return "L1";
+    else if (strsc == "PgDn")
+        return "R2";
+    else if (strsc == "PgUp")
+        return "L2";
+    else if (strsc == "Kpad.")
+        return "R3";
+    else if (strsc == "Kpad/")
+        return "L3";
+    else if (strsc == "LCtrl")
+        return "Button A";
+    else if (strsc == "LAlt")
+        return "Button B";
+    else if (strsc == "Space")
+        return "Button X";
+    else if (strsc == "LShift")
+        return "Button Y";
+#ifdef __RETROFW__
+    else if (strsc == "End")
+#else
+    else if (strsc == "Home")
+#endif
+        return "Power";
+    else
+        return Bstrdup(strsc.c_str());
+}
+#endif
 
 kb_scancode KB_StringToScanCode(const char * string)
 {

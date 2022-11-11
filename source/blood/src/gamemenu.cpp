@@ -1177,8 +1177,13 @@ void CGameMenuItemKeyList::Draw(void)
         char key1, key2;
         key1 = KeyboardKeys[k][0];
         key2 = KeyboardKeys[k][1];
+#ifdef __OPENDINGUX__
+        const char *sKey1 = key1 == sc_Tilde ? "Tilde" : KB_ScanCodeToODString(key1);
+        const char *sKey2 = key2 == sc_Tilde ? "Tilde" : KB_ScanCodeToODString(key2);
+#else
         const char *sKey1 = key1 == sc_Tilde ? "Tilde" : KB_ScanCodeToString(key1);
         const char *sKey2 = key2 == sc_Tilde ? "Tilde" : KB_ScanCodeToString(key2);
+#endif
         sprintf(buffer, "%s", CONFIG_FunctionNumToName(k));
         for (int j = 0; j < 40; j++)
         {
@@ -1195,7 +1200,11 @@ void CGameMenuItemKeyList::Draw(void)
                 sprintf(buffer2, "%s", sKey1);
         }
         else
+#ifdef __OPENDINGUX__
+            sprintf(buffer2, "%s and %s", sKey1, sKey2);
+#else
             sprintf(buffer2, "%s or %s", sKey1, sKey2);
+#endif
         
         if (k == nFocus)
         {

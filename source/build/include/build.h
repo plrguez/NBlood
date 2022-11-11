@@ -76,13 +76,20 @@ enum rendmode_t {
 #ifdef GEKKO
 #  define MAXXDIM 860
 #  define MAXYDIM 490
+#elif defined __OPENDINGUX__
+#  define MAXXDIM 640
+#  define MAXYDIM 480
+#  define MINXDIM 320
+#  define MINYDIM 200
 # else
 #  define MAXXDIM 320
 #  define MAXYDIM 200
 # endif
 
+#if !defined __OPENDINGUX__
 # define MINXDIM MAXXDIM
 # define MINYDIM MAXYDIM
+#endif
 # define M32_FIXME_WALLS 0
 # define M32_FIXME_SECTORS 0
 #endif

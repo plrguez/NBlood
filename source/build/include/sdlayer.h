@@ -56,7 +56,12 @@ int32_t SDL_WaitEventTimeout(SDL_Event *event, int32_t timeout);
         }                                                                                                              \
     }
 
+#ifdef __OPENDINGUX__
+// Fix for OD & RetroFW: Maximum dimensions must be valid
+#define SDL_CHECKMODE(w, h) ((w <= MAXXDIM) && (h <= MAXYDIM) && (w >= MINXDIM) && (h >= MINYDIM) && (((float)w/(float)h) >= 1.2f))
+#else
 #define SDL_CHECKMODE(w, h) ((w < MAXXDIM) && (h < MAXYDIM) && (w >= MINXDIM) && (h >= MINYDIM) && (((float)w/(float)h) >= 1.2f))
+#endif
 
 #define SDL_CHECKFSMODES(w, h)                                                                                         \
     if (w == 0 && h == 0)                                                                                              \

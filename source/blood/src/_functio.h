@@ -100,6 +100,69 @@ char gamefunctions[NUMGAMEFUNCTIONS][MAXGAMEFUNCLEN] =
 
 const char keydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =
    {
+#ifdef __OPENDINGUX__
+   // Movement
+   "Up", "",
+   "Down", "",
+   "Left", "",
+   "Right", "",
+   "Tab", "Down", //Turn around - L1 + Down
+   // Strafe
+   "RAlt", "", // Strafe
+   "BakSpc", "Left", // Strafe_Left - R1 + Left
+   "BakSpc", "Right", // Strafe_Right - R1 + Right
+   "Space", "", // Jump - X
+   "LAlt", "", // Crouch - B
+   "RShift", "", // Run
+   "Tab", "Up", // Autorun - L1 + Up
+   "LShift", "", // Open - Y
+   "LCtrl", "", // Weapon fire - A
+   "BakSpc", "LCtrl", // Weapon_Special_Fire - R1 + A
+   "BakSpc", "Up", // Aim Up - Power - R1 + Up
+   "BakSpc", "Down", // Aim Down - R1 + Down
+   "BakSpc", "Tab", // Aim center - R1 + L1
+   "PgUp", "", // Look Up - L2
+   "PgDn", "", // Look Down - R2
+   "Insert", "", // Tilt_Left
+   "Delete", "", // Tilt_Right
+   "1", "", // Weapon 1
+   "2", "",
+   "3", "",
+   "4", "",
+   "5", "",
+   "6", "",
+   "7", "",
+   "8", "",
+   "9", "",
+   "0", "", // Weapon 10
+   "Enter", "", // Inventory_Use - Start
+   "LShift", "Left", // Inventory_Left - Y + Left
+   "LShift", "Right", // Inventory_Right - Y + Right
+#ifdef __RETROFW__
+   "End", "", // Map_Toggle - Power
+#else
+   "Home", "", // Map_Toggle - Power
+#endif
+   "F", "", // Map_Follow_Mode
+   "LShift", "Down", // Shrink_Screen - Y + Down
+   "LShift", "Up", // Enlarge_Screen - Y + Up
+   "T", "", // Send_Message
+   "K", "", // See_Coop_View
+   "F7", "", // See_Chase_View
+   "U", "", // Mouse_Aiming
+   "I", "", // Toggle_Crosshair
+   "Tab", "Right", // Next_Weapon -L1 + Right
+   "Tab", "Left", // Previous_Weapon - L1 + Left
+   "ScrLck", "", // Holster_Weapon
+   "Y", "", // Show_Opponents_Weapon
+   "B", "", // BeastVision
+   "C", "", // CrystalBall
+   "J", "", // JumpBoots
+   "M", "", // MedKit
+   "P", "", // ProximityBombs
+   "R", "", // RemoteBombs
+   "`", "", // Show_Console
+#else
    "W", "Kpad8",
    "S", "Kpad2",
    "Left", "Kpad4",
@@ -155,6 +218,7 @@ const char keydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =
    "P", "",
    "R", "",
    "`", "",
+#endif
    };
 
 const char oldkeydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =
@@ -239,7 +303,7 @@ static const char * mouseanalogdefaults[MAXMOUSEAXES] =
    };
 #endif
 
-#if defined(GEKKO)
+#if defined(GEKKO) || defined(__OPENDINGUX__)
 static const char * joystickdefaults[MAXJOYBUTTONSANDHATS] =
    {
    "Open", // A
