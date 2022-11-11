@@ -176,6 +176,9 @@ static struct
     // ALSA MIDI synthesiser
     {
         "ALSA",
+    #ifdef __LEPUS__
+        UNSUPPORTED_COMPLETELY
+    #else
     #ifdef __linux__
         ALSADrv_GetError,
         ALSADrv_ErrorString,
@@ -193,6 +196,7 @@ static struct
         ALSADrv_MIDI_Service,
     #else
         UNSUPPORTED_COMPLETELY
+    #endif
     #endif
     },
 };

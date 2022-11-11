@@ -335,7 +335,7 @@ void CONFIG_SetDefaults(void)
     gBrightness = 8;
     //ud.config.ShowWeapons     = 0;
     SoundToggle     = 1;
-#ifdef __RETROFW__
+#if defined __RETROFW__ || defined __LEPUS__
     CDAudioToggle = 1;
 #else
     CDAudioToggle = 0;

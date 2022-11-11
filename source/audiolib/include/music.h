@@ -37,6 +37,7 @@ Modifications for JonoF's port by Jonathon Fowler (jf@jonof.id.au)
 
 extern int MUSIC_ErrorCode;
 
+#if !defined __LEPUS__
 #ifdef __linux__
 #include <vector>
 
@@ -75,6 +76,7 @@ std::vector<alsa_mididevinfo_t> const ALSADrv_MIDI_ListPorts();
 
 extern int32_t ALSA_ClientID;
 extern int32_t ALSA_PortID;
+#endif
 #endif
 
 enum MUSIC_ERRORS

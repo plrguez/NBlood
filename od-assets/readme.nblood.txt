@@ -1,5 +1,5 @@
-NBlood for OpenDingux Beta and RetroFW 2.3
-==========================================
+NBlood for OpenDingux Beta (JZ4770/Lepus) and RetroFW 2.3
+=========================================================
 
 Game files
 ----------
@@ -16,11 +16,12 @@ You can set the video resolution up to 640x480.
 Sound
 -----
 
-By default the CD Audio is enabled for RetroFW (Redbook Audio option). 
+By default the CD Audio is enabled for RetroFW and Lepus (Redbook Audio option). 
 OPL3/Adlib or SF2 Midi can be used but probably you need to reduce the
 sample rate and the number of voices.
 
-CD Audio needs the audio tacks in FLAC or OGG format (For RetroFW only OGG).
+CD Audio needs the audio tacks in OGG format. JZ4770 devices also support
+FLAC audio format.
 Tracks must be named 'bloodxx.ogg' or 'bloodxx.flac', where 'xx' is the
 CD track number (from 02 to 09).
 (see details in https://github.com/nukeykt/NBlood)
@@ -108,6 +109,10 @@ How to build
 
     make -f GNUmakefile RENDERTYPE=SDL SDL_TARGET=1 CROSS=mipsel-gcw0-linux-uclibc- RELEASE=1 OPTOPT='-mips32r2' PLATFORM=GCW blood
 
+    For Opendingux beta for Lepus devices:
+
+    make -f GNUmakefile RENDERTYPE=SDL SDL_TARGET=1 CROSS=mipsel-lepus-linux-musl- RELEASE=1 OPTOPT='-mips32' PLATFORM=LEPUS blood
+
 3- Create the opk file running make_opk_blood.sh shell
 
     For RetroFW 2.3:
@@ -117,3 +122,12 @@ How to build
     For Opendingux beta:
 
     ./make_opk_blood.sh
+
+    For Opendingux beta for Lepus:
+
+    TARGET=lepus ./make_opk_blood.sh
+
+4- To clean the build
+    make -f GNUmakefile RENDERTYPE=SDL PLATFORM=RETROFW clean
+    make -f GNUmakefile RENDERTYPE=SDL PLATFORM=GCW clean
+    make -f GNUmakefile RENDERTYPE=SDL PLATFORM=LEPUS clean

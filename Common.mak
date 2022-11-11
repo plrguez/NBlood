@@ -44,7 +44,7 @@ endif
 
 ifndef SUBPLATFORM
     SUBPLATFORM :=
-    ifeq ($(PLATFORM),$(filter $(PLATFORM),LINUX DINGOO GCW CAANOO RETROFW))
+    ifeq ($(PLATFORM),$(filter $(PLATFORM),LINUX DINGOO GCW LEPUS CAANOO RETROFW))
         SUBPLATFORM := LINUX
     endif
 endif
@@ -209,7 +209,7 @@ ifeq ($(AS),as)
     override AS := nasm
 endif
 
-ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW RETROFW))
+ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW LEPUS RETROFW))
     CROSS := mipsel-linux-
 endif
 
@@ -381,7 +381,7 @@ else ifeq ($(PLATFORM),WII)
     override HAVE_GTK2 := 0
     override HAVE_FLAC := 0
     SDL_TARGET := 1
-else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW RETROFW))
+else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW LEPUS RETROFW))
     override USE_OPENGL := 0
     override NOASM := 1
     ifeq ($(PLATFORM),GCW)
@@ -541,6 +541,8 @@ else ifeq ($(PLATFORM),$(filter $(PLATFORM),DINGOO GCW))
     COMPILERFLAGS += -D__OPENDINGUX__
 else ifeq ($(PLATFORM),$(filter $(PLATFORM),RETROFW))
     COMPILERFLAGS += -D__OPENDINGUX__ -D__RETROFW__
+else ifeq ($(PLATFORM),$(filter $(PLATFORM),LEPUS))
+    COMPILERFLAGS += -D__OPENDINGUX__ -D__LEPUS__
 else ifeq ($(SUBPLATFORM),LINUX)
     # Locate .so files
     LINKERFLAGS += -Wl,-rpath,'$$ORIGIN' -Wl,-z,origin
@@ -887,7 +889,7 @@ endif
 
 ifeq ($(RENDERTYPE),SDL)
     SDL_CONFIG_PATH :=
-    ifeq ($(PLATFORM),$(filter $(PLATFORM),GCW RETROFW))
+    ifeq ($(PLATFORM),$(filter $(PLATFORM),GCW LEPUS RETROFW))
         SYSROOT         := $(shell $(CC) --print-sysroot)
         SDL_CONFIG_PATH := $(SYSROOT)/usr/bin/
     endif

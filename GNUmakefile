@@ -472,7 +472,9 @@ ifeq ($(PLATFORM),WINDOWS)
     audiolib_objs += driver_directsound.cpp driver_winmm.cpp 
 endif
 ifeq ($(SUBPLATFORM),LINUX)
-    audiolib_objs += driver_alsa.cpp
+    ifneq ($(PLATFORM),LEPUS)
+	audiolib_objs += driver_alsa.cpp
+    endif
 endif
 
 ifeq ($(RENDERTYPE),SDL)
