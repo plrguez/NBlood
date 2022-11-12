@@ -347,6 +347,11 @@ void G_AddSearchPaths(void)
 
     addsearchpath("/usr/share/games/pcexhumed");
     addsearchpath("/usr/local/share/games/pcexhumed");
+#if defined __OPENDINGUX__ && !defined __RETROFW__
+    addsearchpath("/media/sdcard/pcexhumed");
+#elif defined __RETROFW__
+    addsearchpath("/media/mmcblk0p1/pcexhumed");
+#endif
 #elif defined EDUKE32_OSX
     char buf[BMAX_PATH];
     int32_t i;

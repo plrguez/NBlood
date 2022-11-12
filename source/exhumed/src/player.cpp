@@ -348,6 +348,25 @@ void PlayerInterruptKeys()
 
     if (BUTTON(gamefunc_Move_Backward))
         fvel += -keyMove;
+    
+#ifdef __OPENDINGUX__
+    if (CONTROL_JoystickEnabled) // controller input
+    {
+        svel -= info.dx>>1;
+        fvel -= info.dz>>1;
+        if (info.mousey == 0)
+        {
+            if (aimmode)
+                q16horz = fix16_sadd(q16horz, fix16_sdiv(fix16_from_int(info.dpitch>>4), F16(64)));
+            else
+                fvel -= info.dpitch>>1;
+        }
+        if (q16avel == 0)
+            q16avel = fix16_sadd(q16avel, fix16_sdiv(fix16_from_int(info.dyaw>>4), F16(32)));
+    }
+    if (mouseflip)
+        q16horz = -q16horz;
+#endif
 
     fvel = clamp(fvel, -12, 12);
     svel = clamp(svel, -12, 12);

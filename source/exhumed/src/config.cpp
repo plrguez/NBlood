@@ -90,6 +90,56 @@ const char gamefunctions[kMaxGameFunctions][kMaxGameFuncLen] =
 
 const char keydefaults[kMaxGameFunctions * 2][kMaxGameFuncLen] =
 {
+#ifdef __OPENDINGUX__
+    "Up", "",   
+    "Down", "",
+    "Left", "",
+    "Right", "",
+    "RAlt", "", // Strafe
+    "BakSpc", "Left", // Strafe_Left - R1 + Left
+    "BakSpc", "Right", // Strafe_Right - R1 + Right
+    "RShift", "", // Run
+    "Space", "",  // Jump - X
+    "LAlt", "", // Crouch - B
+    "LCtrl", "", // Fire - A
+    "LShift", "", // Open - Y
+    "PgUp", "", // Look Up - L2
+    "PgDn", "", // Look_Down - R2
+    "BakSpc", "Tab", // Look_Straight - L1 + R1
+    "BakSpc", "Up", // Aim Up - Power - R1 + Up
+    "BakSpc", "Down", // Aim Down - R1 + Down
+    "T", "", // SendMessage
+    "1", "", // Weapon 1
+    "2", "",
+    "3", "",
+    "4", "",
+    "5", "",
+    "6", "",
+    "7", "", // Weapon 7
+    "Pause", "",
+#ifdef __RETROFW__
+   "End", "", // Map_Toggle - Power
+#else
+    "LShift", "Enter", // Map_Toggle - Y + Start
+#endif
+    "=", "", // Zoom_In
+    ".", "", // Zoom_Out
+    "F11", "", // Gamma_Correction
+    "Escape", "", // Escape - Select
+    "LShift", "Down", // Shrink_Screen - Y + Down
+    "LShift", "Up", // Enlarge_Screen - Y + Up
+    "Enter", "", // Inventory - Start
+    "LShift", "Left", // Inventory_Left - Y + Left
+    "LShift", "Right", // Inventory_Right - Y + Right
+    "`", "", // Show_Console
+    "Tab", "Enter", // Mouse_Aiming - L1 + Start
+    "Tab", "Down", // Toggle_Crosshair - L1 - Down
+    "Tab", "Right", // Next_Weapon - L1 + Right
+    "Tab", "Left", // Previous_Weapon - L1 + Left
+    "Tab", "Up", // AutoRun - L1 + Up
+    "F", "", // Map_Follow_Mode
+    "BakSpc", "LShift", // Third_Person_View - R1 + Y
+#else
     "W", "Kpad8",
     "S", "Kpad2",
     "Left", "Kpad4",
@@ -134,6 +184,7 @@ const char keydefaults[kMaxGameFunctions * 2][kMaxGameFuncLen] =
     "CapLck", "",
     "F", "",
 	"F7", "",
+#endif
 };
 
 const char oldkeydefaults[kMaxGameFunctions * 2][kMaxGameFuncLen] =
@@ -208,6 +259,62 @@ static const char* mouseanalogdefaults[MAXMOUSEAXES] =
 static const char* mousedigitaldefaults[MAXMOUSEDIGITAL] =
 {
 };
+
+#ifdef __OPENDINGUX__
+static const char * joystickdefaults[MAXJOYBUTTONSANDHATS] =
+   {
+   "Open", // A
+   "Fire", // B
+   "Run", // 1
+   "Map", // 2
+   "Previous_Weapon", // -
+   "Next_Weapon", // +
+   "", // Home
+   "Jump", // Z
+   "Crouch", // C
+   "Map", // X
+   "Run", // Y
+   "Jump", // L
+   "Quick_Kick", // R
+   "Crouch", // ZL
+   "Fire", // ZR
+   "Quick_Kick", // D-Pad Up
+   "Inventory_Right", // D-Pad Right
+   "Inventory", // D-Pad Down
+   "Inventory_Left", // D-Pad Left
+   };
+
+
+static const char * joystickclickeddefaults[MAXJOYBUTTONSANDHATS] =
+   {
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "Inventory",
+   };
+
+
+static const char * joystickanalogdefaults[MAXJOYAXES] =
+   {
+   "analog_strafing",
+   "analog_moving",
+   "analog_turning",
+   "analog_lookingupanddown",
+   };
+
+static const char * joystickdigitaldefaults[MAXJOYDIGITAL] =
+   {
+   };
+#endif
 
 ud_setup_t gSetup;
 
@@ -457,8 +564,35 @@ void CONFIG_SetDefaults()
     else
 # endif
     {
+#ifdef __RETROFW__
+        gSetup.xdim = 320;
+        gSetup.ydim = 240;
+#elif defined __OPENDINGUX__
+        uint32_t inited = SDL_WasInit(SDL_INIT_VIDEO);
+        if (inited == 0)
+            SDL_Init(SDL_INIT_VIDEO);
+        else if (!(inited & SDL_INIT_VIDEO))
+            SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+        SDL_Rect **modes;
+        modes = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_HWPALETTE|SDL_TRIPLEBUF|SDL_FULLSCREEN);
+        
+        // If not video mode detected or any format detected force 320x240
+        if ( (modes == (SDL_Rect **)0) || (modes == (SDL_Rect **)-1))
+        {
+            gSetup.xdim = 320;
+            gSetup.ydim = 240;
+        } else {
+            gSetup.xdim = modes[0]->w;
+            gSetup.ydim = modes[0]->h;
+            // RG280/LDK: display game in 4:3 ar (320x480 => 320x240)
+            if (gSetup.xdim == 320 && gSetup.ydim == 480)
+                gSetup.ydim = 240;
+        }
+#else
         gSetup.xdim = 1024;
         gSetup.ydim = 768;
+#endif
     }
 
 #ifdef USE_OPENGL
@@ -522,6 +656,36 @@ void CONFIG_SetDefaults()
         CONTROL_MapDigitalAxis(i, MouseDigitalFunctions[i][0], 0);
         CONTROL_MapDigitalAxis(i, MouseDigitalFunctions[i][1], 1);
     }
+
+#ifdef __OPENDINGUX__
+    for (int i=0; i<MAXJOYBUTTONSANDHATS; i++)
+    {
+        JoystickFunctions[i][0] = CONFIG_FunctionNameToNum(joystickdefaults[i]);
+        JoystickFunctions[i][1] = CONFIG_FunctionNameToNum(joystickclickeddefaults[i]);
+        CONTROL_MapButton(JoystickFunctions[i][0], i, 0, controldevice_joystick);
+        CONTROL_MapButton(JoystickFunctions[i][1], i, 1, controldevice_joystick);
+    }
+
+    for (int i=0; i<MAXJOYAXES; i++)
+    {
+        JoystickAnalogueScale[i] = DEFAULTJOYSTICKANALOGUESCALE;
+        JoystickAnalogueDead[i] = DEFAULTJOYSTICKANALOGUEDEAD;
+        JoystickAnalogueSaturate[i] = DEFAULTJOYSTICKANALOGUESATURATE;
+        CONTROL_SetAnalogAxisScale(i, JoystickAnalogueScale[i], controldevice_joystick);
+        JOYSTICK_SetDeadZone(i, JoystickAnalogueDead[i], JoystickAnalogueSaturate[i]);
+
+        JoystickDigitalFunctions[i][0] = CONFIG_FunctionNameToNum(joystickdigitaldefaults[i*2]);
+        JoystickDigitalFunctions[i][1] = CONFIG_FunctionNameToNum(joystickdigitaldefaults[i*2+1]);
+        CONTROL_MapDigitalAxis(i, JoystickDigitalFunctions[i][0], 0);
+        CONTROL_MapDigitalAxis(i, JoystickDigitalFunctions[i][1], 1);
+
+        JoystickAnalogueAxes[i] = CONFIG_AnalogNameToNum(joystickanalogdefaults[i]);
+        CONTROL_MapAnalogAxis(i, JoystickAnalogueAxes[i]);
+
+        JoystickAnalogueInvert[i] = 0;
+        CONTROL_SetAnalogAxisInvert(i, JoystickAnalogueInvert[i]);
+    }
+#endif
 
     // TODO:
     //CONFIG_SetGameControllerDefaultsStandard();
@@ -617,7 +781,11 @@ int CONFIG_ReadSetup()
 // wrapper for CONTROL_MapKey(), generates key bindings to reflect changes to keyboard setup
 void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode key2, kb_scancode oldkey2)
 {
+#ifdef __OPENDINGUX__
+    char tempbuf[1024];
+#else
     char tempbuf[256];
+#endif
     int const keys[] = { key1, key2, oldkey1, oldkey2 };
     char buf[2*kMaxGameFuncLen];
 
@@ -660,6 +828,16 @@ void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode
             CONTROL_FreeKeyBind(keys[k]);
         }
     }
+
+#ifdef __OPENDINGUX__
+    if (KeyboardKeys[which][0] || KeyboardKeys[which][1])
+    {
+        Bsprintf(buf, "gamefunc_%s", CONFIG_FunctionNumToName(which));
+        int const len = Bstrlen(tempbuf);
+        if (len > 0)
+            CONTROL_BindODKey(which, buf, 1, KeyboardKeys[which][0], KeyboardKeys[which][1]);
+    }
+#endif
 }
 
 
