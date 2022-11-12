@@ -1016,11 +1016,6 @@ void joyScanDevices()
                 joystick.numBalls   = SDL_JoystickNumBalls(joydev);
                 joystick.numButtons = min(32, SDL_JoystickNumButtons(joydev));
                 joystick.numHats    = min((36 - joystick.numButtons) / 4, SDL_JoystickNumHats(joydev));
-#if defined __OPENDINGUX__ && !defined __RETROFW__
-                // OD Beta do not detect buttons as joystick buttons, so we will emulate it.
-                //joystick.numButtons = 12;
-                // joystick.numHats = 1; // Emulate Hat with PAD
-#endif
 
                 joystick.validButtons = UINT32_MAX;
 #if defined __OPENDINGUX___

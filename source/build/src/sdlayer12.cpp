@@ -7,9 +7,9 @@
 
 #if defined __OPENDINGUX__
 #ifdef __RETROFW__
-#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE|SDL_HWACCEL)
+#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE|SDL_HWACCEL|SDL_TRIPLEBUF)
 #else
-#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE)
+#define SURFACE_FLAGS	(SDL_HWSURFACE|SDL_HWPALETTE|SDL_TRIPLEBUF)
 #endif
 #else
 #define SURFACE_FLAGS	(SDL_SWSURFACE|SDL_HWPALETTE|SDL_HWACCEL|SDL_RESIZABLE)
@@ -410,64 +410,6 @@ int32_t handleevents_pollsdl(void)
         {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-#if defined __OPENDINGUX__
-                {
-                    // Emulate joystick buttons
-                    // Xbox 360 - Positional buttons (Swapped A/B X/Y)
-                    if (appactive && joystick.numButtons)
-                    {
-                        int button = 12;
-                        switch (ev.key.keysym.sym)
-                        {
-                        case SDLK_LALT: // B
-                            button = 0;
-                            break;
-                        case SDLK_LCTRL: // A
-                            button = 1;
-                            break;
-                        case SDLK_LSHIFT: // y
-                            button = 2;
-                            break;
-                        case SDLK_SPACE: // x
-                            button = 3;
-                            break;
-                        case SDLK_ESCAPE: // Select
-                            button = 6;
-                            break;
-                        case SDLK_RETURN: // Start
-                            button = 7;
-                            break;
-                        case SDLK_TAB: // L1
-                            button = 4;
-                            break;
-                        case SDLK_BACKSPACE: // R1
-                            button = 5;
-                            break;
-                        case SDLK_PAGEUP: // L2
-                            button = 10;
-                            break;
-                        case SDLK_PAGEDOWN: // R2
-                            button = 11;
-                            break;
-                        case SDLK_KP_DIVIDE: // L3
-                            button = 8;
-                            break;
-                        case SDLK_KP_PERIOD: // R3
-                            button = 9;
-                            break;
-                        default:
-                            break;
-                        }
-                        if (button < 12)
-                        {
-                            if (ev.type == SDL_KEYDOWN)
-                                joystick.bits |= 1 << button;
-                            else
-                                joystick.bits &= ~(1 << button);
-                        }
-                    }
-                }
-#endif
                 code = keytranslation[ev.key.keysym.sym];
 #ifdef KEY_PRINT_DEBUG
                 printf("keytranslation[%d] = %s (%d)  %s\n", ev.key.keysym.sym, g_keyNameTable[code], code,
