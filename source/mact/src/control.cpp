@@ -177,11 +177,7 @@ static int32_t controlKeyboardFunctionPressed(int32_t which)
         r = !!KB_KeyDown[mapped.keyPrimary];
 
     if (mapped.keySecondary != KEYUNDEFINED && !CONTROL_KeyBinds[mapped.keySecondary].cmdstr)
-#ifdef __OPENDINGUX__
-        r &= !!KB_KeyDown[mapped.keySecondary];
-#else
         r |= !!KB_KeyDown[mapped.keySecondary];
-#endif
 
     return r;
 }
