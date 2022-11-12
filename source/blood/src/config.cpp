@@ -275,9 +275,31 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
-#ifdef __OPENDINGUX__
+#ifdef __RETROFW__
         gSetup.xdim = 320;
         gSetup.ydim = 240;
+#elif defined __OPENDINGUX__
+        uint32_t inited = SDL_WasInit(SDL_INIT_VIDEO);
+        if (inited == 0)
+            SDL_Init(SDL_INIT_VIDEO);
+        else if (!(inited & SDL_INIT_VIDEO))
+            SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+        SDL_Rect **modes;
+        modes = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_HWPALETTE|SDL_TRIPLEBUF|SDL_FULLSCREEN);
+        
+        // If not video mode detected or any format detected force 320x240
+        if ( (modes == (SDL_Rect **)0) || (modes == (SDL_Rect **)-1))
+        {
+            gSetup.xdim = 320;
+            gSetup.ydim = 240;
+        } else {
+            gSetup.xdim = modes[0]->w;
+            gSetup.ydim = modes[0]->h;
+            // RG280/LDK: display game in 4:3 ar (320x480 => 320x240)
+            if (gSetup.xdim == 320 && gSetup.ydim == 480)
+                gSetup.ydim = 240;
+        }
 #else
         gSetup.xdim = 1024;
         gSetup.ydim = 768;
