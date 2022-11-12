@@ -52,7 +52,7 @@ Default in-game keys:
 
         Strafe Left                     R1 + Left
         Strafe Right                    R1 + Right
-        Aim Up - Power                  R1 + Up
+        Aim Up                          R1 + Up
         Aim Down                        R1 + Down
         Aim center                      R1 + L1
 
