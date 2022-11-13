@@ -133,3 +133,7 @@
 #define asc_Ctrl_U 21
 #define asc_Ctrl_W 23
 #define asc_Space 32
+#ifdef __OPENDINGUX__
+// SDL is sending backspace (6) as Delete (127)
+#define asc_Delete 127
+#endif

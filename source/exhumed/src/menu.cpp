@@ -1333,7 +1333,11 @@ check_keys:
                 // Enter wasn't pressed
                 PlayLocalSound(4, 0); // ??
 
+#ifdef __OPENDINGUX__
+                if (ch == asc_BackSpace || ch == asc_Delete)
+#else
                 if (ch == asc_BackSpace)
+#endif
                 {
                     nameList[nSlot][nNameOffset] = 0;
 
