@@ -1195,11 +1195,12 @@ int menu_NewGameMenu()
     int y = (nSlot * 22) + 78;
     
 #ifdef __OPENDINGUX__
+    #define NUM_CHARS 37
     char ascii_accepted[37] = { 
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
         'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', ' ' };
+        'U', 'V', 'W', 'X', 'Y', 'Z', ' ',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
     int current_ascii_char = 0;
     char odch = 0;
     char odnch = ascii_accepted[current_ascii_char];
@@ -1230,7 +1231,7 @@ int menu_NewGameMenu()
         {
             if (KB_KeyDown[sc_UpArrow])
             {
-                if (current_ascii_char < 36)
+                if (current_ascii_char < NUM_CHARS - 1)
                     current_ascii_char++;
                 else
                     current_ascii_char = 0;
@@ -1241,7 +1242,7 @@ int menu_NewGameMenu()
                 if (current_ascii_char > 0)
                     current_ascii_char--;
                 else
-                    current_ascii_char = 36;
+                    current_ascii_char = NUM_CHARS - 1;
                 KB_KeyDown[sc_DownArrow] = 0;
             }
             odch = ascii_accepted[current_ascii_char];
