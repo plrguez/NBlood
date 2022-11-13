@@ -1289,8 +1289,8 @@ check_keys:
             {
                 KB_GetCh();
                 goto check_keys;
-                }
- 
+            }
+
             // handle key input
             if (ch == asc_Enter)
             {
