@@ -1997,6 +1997,9 @@ CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap()
     at28 = 0;
     at37 = 0;
     at35 = 1;
+#ifdef __OPENDINGUX__
+    last_char = 0;
+#endif
 }
 
 CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap(char *a1, int a2, int a3, int a4, int a5, char *a6, int a7, char a8, void(*a9)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int a10)
@@ -2015,23 +2018,47 @@ CGameMenuItemZEditBitmap::CGameMenuItemZEditBitmap(char *a1, int a2, int a3, int
     at36 = a8;
     at30 = a9;
     at28 = a10;
+#ifdef __OPENDINGUX__
+    last_char = 0;
+#endif
 }
 
 void CGameMenuItemZEditBitmap::AddChar(char ch)
 {
     int i = strlen(at20);
+#ifdef __OPENDINGUX__
+    i = last_char;
+#endif
     if (i + 1 < at24)
     {
         at20[i] = ch;
         at20[i + 1] = 0;
+#ifdef __OPENDINGUX__
+        last_char = i + 1;
+#endif
     }
 }
+
+#ifdef __OPENDINGUX__
+void CGameMenuItemZEditBitmap::SetLastChar(char ch)
+{
+    if (last_char + 1 < at24)
+    {
+        at20[last_char] = ch;
+        at20[last_char + 1] = 0;
+    }
+}
+#endif
 
 void CGameMenuItemZEditBitmap::BackChar(void)
 {
     int i = strlen(at20);
     if (i > 0)
         at20[i - 1] = 0;
+#ifdef __OPENDINGUX__
+    if (i > 0)
+        last_char = i - 1;
+#endif
 }
 
 void CGameMenuItemZEditBitmap::Draw(void)
@@ -2106,6 +2133,16 @@ void CGameMenuItemZEditBitmap::Draw(void)
 
 bool CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
 {
+#ifdef __OPENDINGUX__
+    #define NUM_CHARS 40
+    char ascii_accepted[NUM_CHARS] = { 
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+        'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '-', '_', '.',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
+    static int current_ascii_char = 0;
+    #define SET_CURRENT_ASCII_CHAR(ascii, current) { for (int i=0;i<NUM_CHARS;i++) { if (ascii == ascii_accepted[i]) { current = i; break; } } }
+#endif
     static char buffer[256];
     // Hack
     if (event.at2 == sc_kpad_2 || event.at2 == sc_kpad_4 || event.at2 == sc_kpad_6 || event.at2 == sc_kpad_8)
@@ -2144,12 +2181,36 @@ bool CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
             at20[0] = 0;
         buffer[at24-1] = 0;
         bScan = 1;
+#ifdef __OPENDINGUX__
+        if (!Bstrncmp(buffer,"<Empty>",7))
+            last_char = 0;
+        else
+            last_char = strlen(buffer);
+        if (last_char)
+            SET_CURRENT_ASCII_CHAR(buffer[last_char-1], current_ascii_char)
+        else
+            current_ascii_char = 0;
+        if (at30)
+            SetLastChar(ascii_accepted[current_ascii_char]);
+#endif
         gGameMenuMgr.m_bScanning = true;
         return false;
     case kMenuEventBackSpace:
         if (bScan)
             BackChar();
         return false;
+#ifdef __OPENDINGUX__
+    case kMenuEventRight:
+    {
+        if (bScan && at30)
+        {
+            AddChar(ascii_accepted[current_ascii_char]);
+            SetLastChar(ascii_accepted[current_ascii_char]);
+            return false;
+        }
+        return CGameMenuItem::Event(event);
+    }
+#endif
     case kMenuEventKey:
     case kMenuEventSpace:
     case kMenuEventDelete:
@@ -2157,6 +2218,14 @@ bool CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
         char key;
         if (bScan && event.at2 < 128)
         {
+#ifdef __OPENDINGUX__
+            if (keystatus[sc_LeftControl])
+            {
+                AddChar(ascii_accepted[current_ascii_char]);
+                SetLastChar(ascii_accepted[current_ascii_char]);
+                return false;
+            }
+#endif
             if (keystatus[sc_LeftShift] || keystatus[sc_RightShift])
                 key = g_keyAsciiTableShift[event.at2];
             else
@@ -2171,11 +2240,35 @@ bool CGameMenuItemZEditBitmap::Event(CGameMenuEvent &event)
     }
     case kMenuEventUp:
         if (bScan)
+#ifdef __OPENDINGUX__
+        {
+            if (current_ascii_char < NUM_CHARS - 1)
+                current_ascii_char++;
+            else
+                current_ascii_char = 0;
+            if (at30)
+                SetLastChar(ascii_accepted[current_ascii_char]);
             return false;
+        }
+#else
+            return false;
+#endif
         return CGameMenuItem::Event(event);
     case kMenuEventDown:
         if (bScan)
+#ifdef __OPENDINGUX__
+        {
+            if (current_ascii_char > 0)
+                current_ascii_char--;
+            else
+                current_ascii_char = NUM_CHARS - 1;
+            if (at30)
+                SetLastChar(ascii_accepted[current_ascii_char]);
             return false;
+        }
+#else
+            return false;
+#endif
         return CGameMenuItem::Event(event);
     }
     return CGameMenuItem::Event(event);

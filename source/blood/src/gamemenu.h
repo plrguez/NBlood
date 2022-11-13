@@ -318,9 +318,15 @@ public:
     char at35;
     char at36;
     char at37;
+#ifdef __OPENDINGUX__
+    int last_char;
+#endif
     CGameMenuItemZEditBitmap();
     CGameMenuItemZEditBitmap(char *, int, int, int, int, char *, int, char, void(*)(CGameMenuItemZEditBitmap *, CGameMenuEvent *), int);
     void AddChar(char);
+#ifdef __OPENDINGUX__
+    void SetLastChar(char);
+#endif
     void BackChar(void);
     virtual void Draw(void);
     virtual bool Event(CGameMenuEvent &);

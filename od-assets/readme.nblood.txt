@@ -26,6 +26,17 @@ Tracks must be named 'bloodxx.ogg' or 'bloodxx.flac', where 'xx' is the
 CD track number (from 02 to 09).
 (see details in https://github.com/nukeykt/NBlood)
 
+Save game
+---------
+
+From game press 'Select' button to open menu, then select Save.
+With D-PAD select an slot and press the 'Start' button. 
+
+To introduce a name use the D-Pad Up/Down to change characters and
+the D-Pad Right/A button to confirm selected character.
+
+To confirm save name and save use the 'Start' button.
+
 Keys in Menus
 -------------
 
