@@ -1,21 +1,25 @@
 PCExhumed for OpenDingux Beta (JZ4770/Lepus) and RetroFW 2.3
 ============================================================
 
-Currently there is no menu in game options to change video options or keymap.
+Currently there is no menu to change video options nor the key mapping.
 
-When the game require to introduce some text the only possibility is to 
-introduce spaces with the 'X' button.
-
-start a new game
+Start a new game
 ----------------
 
 To start a new game is required to create a new game file.
 
-For this select "New game" option in main menu with 'Start' button
+For this select "New game" option in main menu with 'Start' button,
 then select a slot and press the 'Start' button again.
 
-Now is required to introduce a game name. Press the 'X' button 
-to introduce at least one space character and confirm with 'Start' button. 
+Now is required to introduce a game name. To do it:
+    
+    Select a chararacter            D-PAD Up and Down         
+    Accept current and advance      D-PAD Right or A button
+    Backspace                       R1
+
+    Cancel name introduction         
+    and go back                     Select
+    Accept name and continue        Start
 
 If a question about overwite existing game appears then
 you can press 'Start' to confirm the overwrite or 'Select' to cancel.
