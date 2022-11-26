@@ -138,7 +138,7 @@ How to build
 
     For Opendingux beta:
 
-    ./make_opk_blood.sh
+    ./make_opk_exhumed.sh
 
     For Opendingux beta for Lepus:
 
