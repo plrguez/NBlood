@@ -232,8 +232,35 @@ void CONFIG_SetDefaults(void)
     else
 # endif
     {
+#ifdef __RETROFW__
+        ud.setup.xdim = 320;
+        ud.setup.ydim = 240;
+#elif defined __OPENDINGUX__ && !defined USE_OPENGL
+        uint32_t inited = SDL_WasInit(SDL_INIT_VIDEO);
+        if (inited == 0)
+            SDL_Init(SDL_INIT_VIDEO);
+        else if (!(inited & SDL_INIT_VIDEO))
+            SDL_InitSubSystem(SDL_INIT_VIDEO);
+
+        SDL_Rect **modes;
+        modes = SDL_ListModes(NULL, SDL_HWSURFACE|SDL_HWPALETTE|SDL_TRIPLEBUF|SDL_FULLSCREEN);
+
+        // If not video mode detected or any format detected force 320x240
+        if ( (modes == (SDL_Rect **)0) || (modes == (SDL_Rect **)-1))
+        {
+            ud.setup.xdim = 320;
+            ud.setup.ydim = 240;
+        } else {
+            ud.setup.xdim = modes[0]->w;
+            ud.setup.ydim = modes[0]->h;
+            // RG280/LDK: display game in 4:3 ar (320x480 => 320x240)
+            if (ud.setup.xdim == 320 && ud.setup.ydim == 480)
+                ud.setup.ydim = 240;
+        }
+#else
         ud.setup.xdim = 1024;
         ud.setup.ydim = 768;
+#endif
     }
 #endif
 
@@ -250,7 +277,11 @@ void CONFIG_SetDefaults(void)
 #elif defined __ANDROID__
     ud.config.MixRate = droidinfo.audio_sample_rate;
 #else
+#ifdef __OPENDINGUX__
+    ud.config.MixRate = 44100;
+#else
     ud.config.MixRate = 48000;
+#endif
 #endif
     ud.config.MouseBias = 0;
     ud.config.MouseDeadZone = 0;
@@ -451,7 +482,11 @@ void CONFIG_SetDefaults(void)
 void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode key2, kb_scancode oldkey2)
 {
     int const keys[] = { key1, key2, oldkey1, oldkey2 };
+#if defined __OPENDINGUX__
+    char buf[16*MAXGAMEFUNCLEN];
+#else
     char buf[2*MAXGAMEFUNCLEN];
+#endif
 
     if (which == gamefunc_Show_Console)
         OSD_CaptureKey(key1);
@@ -492,6 +527,15 @@ void CONFIG_MapKey(int which, kb_scancode key1, kb_scancode oldkey1, kb_scancode
             CONTROL_FreeKeyBind(keys[k]);
         }
     }
+#ifdef __OPENDINGUX__
+    if (ud.config.KeyboardKeys[which][0] || ud.config.KeyboardKeys[which][1])
+    {
+        Bsprintf(buf, "gamefunc_%s", CONFIG_FunctionNumToName(which));
+        int const len = Bstrlen(tempbuf);
+        if (len > 0)
+            CONTROL_BindODKey(which, buf, 1, ud.config.KeyboardKeys[which][0], ud.config.KeyboardKeys[which][1]);
+    }
+#endif
 }
 
 

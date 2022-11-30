@@ -24,6 +24,16 @@ extern int g_useCwd;
 #define APPBASENAME         "rednukem"
 #endif
 
+#ifdef __OPENDINGUX__
+#ifndef OD_EXTERNAL_SDCARD
+#ifdef __RETROFW__
+#define OD_EXTERNAL_SDCARD "/media/mmcblk1p1"
+#else
+#define OD_EXTERNAL_SDCARD "/media/sdcard"
+#endif
+#endif
+#endif
+
 #define GAMEFLAG_DUKE       0x00000001
 #define GAMEFLAG_NAM        0x00000002
 #define GAMEFLAG_NAPALM     0x00000004

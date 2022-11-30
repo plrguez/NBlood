@@ -107,6 +107,77 @@ char gamefunctions[NUMGAMEFUNCTIONS][MAXGAMEFUNCLEN] =
 
 char keydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =
    {
+#ifdef __OPENDINGUX__
+   // Movement
+   "Up", "",
+   "Down", "",
+   "Left", "",
+   "Right", "",
+   // Strafe
+   "", "", // Strafe
+   "LCtrl", "", // Fire - A
+   "LShift", "", // Open - Y
+   "", "", // Run
+   "Tab", "Up", // Autorun - L1 + Up
+   "Space", "", // Jump - X
+   "LAlt", "", // Crouch - B
+   "PgUp", "", // Look Up - L2
+   "PgDn", "", // Look Down - R2
+   "", "", // Look Left
+   "", "", // Look Right
+   "BakSpc", "Left", // Strafe_Left - R1 + Left
+   "BakSpc", "Right", // Strafe_Right - R1 + Right   
+   "BakSpc", "Up", // Aim Up - Power - R1 + Up
+   "BakSpc", "Down", // Aim Down - R1 + Down
+   "1", "", // Weapon 1
+   "2", "",
+   "3", "",
+   "4", "",
+   "5", "",
+   "6", "",
+   "7", "",
+   "8", "",
+   "9", "",
+   "0", "", // Weapon 10
+   "Enter", "", // Inventory - Start
+   "LShift", "Left", // Inventory_Left - Y + Left
+   "LShift", "Right", // Inventory_Right - Y + Right
+   "", "", // Holo_Duke
+   "", "", // Jetpack",
+   "", "", // NightVision",
+   "", "", // MedKit",
+   "Tab", "Down", //TurnAround - L1 + Down
+   "", "", // SendMessage",   
+#ifdef __RETROFW__
+   "End", "", // Map_Toggle - Power
+#else
+   "LShift", "Enter", // Map_Toggle - Y + Enter
+#endif   
+   "LShift", "Down", // Shrink_Screen - Y + Down
+   "LShift", "Up", // Enlarge_Screen - Y + Up   
+   "BakSpc", "Tab", // Center View - R1 + L1   
+   "", "", // Holster_Weapon",
+   "", "", // Show_Opponents_Weapon",
+   "", "", // Map_Follow_Mode",
+   "", "", // See_Coop_View",   
+   "BakSpc", "LCtrl", // Mouse_Aiming - R1 + A
+   "", "", // Toggle_Crosshair",
+   "", "", // Steroids",
+   "", "", // Quick_Kick",
+   "Tab", "Right", // Next_Weapon -L1 + Right
+   "Tab", "Left", // Previous_Weapon - L1 + Left
+   "", "", // Show_Console",
+   "", "", // Show_DukeMatch_Scores",
+   "", "", // Dpad_Select",
+   "", "", // Dpad_Aiming",
+   "", "", // Alt_Weapon",
+   "", "", // Last_Used_Weapon",
+   "", "", // Quick_Save",
+   "", "", // Quick_Load",
+   "", "", // Alt_Fire",
+   "", "", // Third_Person_View",
+   "", "", // Toggle_Crouch",   
+#else
    "W", "Kpad8",
    "S", "Kpad2",
    "Left", "Kpad4",
@@ -169,6 +240,7 @@ char keydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =
    "F9", "",
    "F7", "",
    "", "",
+#endif
    };
 
 char oldkeydefaults[NUMGAMEFUNCTIONS*2][MAXGAMEFUNCLEN] =

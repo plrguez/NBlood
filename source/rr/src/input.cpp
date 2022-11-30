@@ -136,11 +136,105 @@ void I_PanelDownClear(void)
     KB_ClearKeyDown(sc_PgDn);
 }
 
+#ifdef __OPENDINGUX__
+#define NUM_CHARS 40
+char ascii_accepted[NUM_CHARS] = { 
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '-', '_', '.',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', };
+int current_ascii_char = 0;
+char odch = 0;
+char odnch = ascii_accepted[current_ascii_char];
+#define SET_CURRENT_ASCII_CHAR(ascii, current) { for (int i=0;i<NUM_CHARS;i++) { if (ascii == ascii_accepted[i]) { current = i; break; } } }
+bool advance = false;
+#endif
 
 int32_t I_EnterText(char *t, int32_t maxlength, int32_t flags)
 {
     char ch;
     int32_t inputloc = Bstrlen(typebuf);
+
+#ifdef __OPENDINGUX__
+    if (!inputloc)
+        memset(t,0,maxlength);
+    if (inputloc && !advance)
+        inputloc--;
+    advance = false;
+    // Restore last input character in new position
+    if (odnch && inputloc < maxlength)
+    {
+        *(t+inputloc) = odnch;
+        odch = odnch;
+        odnch = 0;
+        SET_CURRENT_ASCII_CHAR(odch, current_ascii_char)
+    }
+    // Up: next char, Down: previous character
+    if (KB_KeyDown[sc_UpArrow] || KB_KeyDown[sc_DownArrow])
+    {
+        if (KB_KeyDown[sc_UpArrow])
+        {
+            if (current_ascii_char < NUM_CHARS - 1)
+                current_ascii_char++;
+            else
+                current_ascii_char = 0;
+            KB_KeyDown[sc_UpArrow] = 0;
+        }
+        if (KB_KeyDown[sc_DownArrow])
+        {
+            if (current_ascii_char > 0)
+                current_ascii_char--;
+            else
+                current_ascii_char = NUM_CHARS - 1;
+            KB_KeyDown[sc_DownArrow] = 0;
+        }
+        odch = ascii_accepted[current_ascii_char];
+
+        if (inputloc < maxlength) // n chars per slot name
+            *(t+inputloc) = odch;
+    }
+    // Right cursor or A button: confirm character.
+    if ((KB_KeyDown[sc_RightArrow] || KB_KeyDown[sc_LeftControl]) && odch)
+    {
+        advance = true;
+        // Emulate keystroke
+        if (odch)
+        {
+            keyBufferInsert(odch);
+            odnch = odch;
+        }
+        odch = 0;
+        if (KB_KeyDown[sc_RightArrow])
+            KB_KeyDown[sc_RightArrow] = 0;
+        if (KB_KeyDown[sc_LeftControl])
+            KB_KeyDown[sc_LeftControl] = 0;
+    }
+    // Backspace
+    if (KB_KeyDown[sc_BackSpace] && inputloc < maxlength && inputloc > 0)
+    {
+        advance = true;
+        *(t+inputloc) = 0;
+        odnch = *(t+inputloc-1);
+        odch = 0;
+        KB_KeyDown[sc_BackSpace] = 0;
+    }
+    // Include current selected char into the name
+    if (KB_KeyDown[sc_Enter] && inputloc < maxlength)
+    {
+        inputloc++;
+        *(t+inputloc) = '\0';
+        
+        current_ascii_char = 0;
+        odch = 0;
+        odnch = ascii_accepted[current_ascii_char];
+    }
+    if (KB_KeyDown[sc_Escape])
+    {
+        current_ascii_char = 0;
+        odch = 0;
+        odnch = ascii_accepted[current_ascii_char];
+    }
+#endif
 
     while ((ch = KB_GetCh()) != 0)
     {

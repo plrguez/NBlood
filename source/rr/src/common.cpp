@@ -615,6 +615,10 @@ void G_AddSearchPaths(void)
     addsearchpath("/usr/local/share/games/jfduke3d");
     addsearchpath("/usr/share/games/eduke32");
     addsearchpath("/usr/local/share/games/eduke32");
+#if defined __OPENDINGUX__
+    Bsnprintf(buf, sizeof(buf), "%s/%s", OD_EXTERNAL_SDCARD, APPBASENAME);
+    addsearchpath(buf);
+#endif
 #elif defined EDUKE32_OSX
     char buf[BMAX_PATH];
     int32_t i;

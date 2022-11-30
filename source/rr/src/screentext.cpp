@@ -470,7 +470,12 @@ vec2_t G_ScreenText(const int32_t font,
     vec2_t extent = { 0, 0, }; // holds the x-width of each character and the greatest y-height of each line
     const vec2_t Xdirection = { sintable[(blockangle+512)&2047], sintable[blockangle&2047], };
     const vec2_t Ydirection = { sintable[(blockangle+1024)&2047], sintable[(blockangle+512)&2047], };
+#ifdef __OPENDINGUX__
+    // Fix visual mini fonts for 640x480 resolution.
+    const int32_t z2 = (RR && (f & TEXT_RRMENUTEXTHACK) != 0) ? ( (f & TEXT_ODRRHACK && ud.setup.xdim < 640) ? 65535 : 32768 ) : z;
+#else
     const int32_t z2 = (RR && (f & TEXT_RRMENUTEXTHACK) != 0) ? 26214 : z;
+#endif
 
     int32_t blendidx=0, tile;
     char t;

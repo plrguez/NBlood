@@ -4161,6 +4161,16 @@ void P_HandleSharedKeys(int playerNum)
                 }
             }
     }
+    
+#ifdef __OPENDINGUX__
+    // Very ugly hack to fix some functions assigned to combinations of buttons, such as Inventory navigation: 
+    // Button Y (by default is assigned to Open) + D-PAD Left/Right
+    if ( pPlayer->interface_toggle_flag && (TEST_SYNC_KEY(playerBits, SK_INV_LEFT) || TEST_SYNC_KEY(playerBits, SK_INV_RIGHT) ||
+            TEST_SYNC_KEY(playerBits, SK_JETPACK) || TEST_SYNC_KEY(playerBits, SK_NIGHTVISION) || TEST_SYNC_KEY(playerBits, SK_STEROIDS) ||
+            TEST_SYNC_KEY(playerBits, SK_HOLSTER) || TEST_SYNC_KEY(playerBits, SK_HOLODUKE) || TEST_SYNC_KEY(playerBits, SK_MEDKIT) ||
+            TEST_SYNC_KEY(playerBits, SK_TURNAROUND)) )
+        pPlayer->interface_toggle_flag = 0;
+#endif
 
     if (!(playerBits & ((15u<<SK_WEAPON_BITS)|BIT(SK_STEROIDS)|BIT(SK_NIGHTVISION)|BIT(SK_MEDKIT)|BIT(SK_QUICK_KICK)| \
                    BIT(SK_HOLSTER)|BIT(SK_INV_LEFT)|BIT(SK_PAUSE)|BIT(SK_HOLODUKE)|BIT(SK_JETPACK)|BIT(SK_INV_RIGHT)| \

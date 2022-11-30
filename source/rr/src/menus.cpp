@@ -861,7 +861,9 @@ static MenuEntry_t *MEL_VIDEOSETUP[] = {
 #ifdef USE_OPENGL
     &ME_VIDEOSETUP_RENDERER,
 #endif
+#ifndef __OPENDINGUX__
     &ME_VIDEOSETUP_FULLSCREEN,
+#endif
     &ME_VIDEOSETUP_VSYNC,
     &ME_VIDEOSETUP_FRAMELIMIT,
     &ME_Space6_Redfont,
@@ -2014,7 +2016,44 @@ void Menu_Init(void)
     MEOS_Gamefuncs.numOptions = k;
 
     for (i = 0; i < NUMKEYS; ++i)
+#if defined __OPENDINGUX__
+    {
+        if (!Bstrcmp("escape",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "Select";
+        else if (!Bstrcmp("return",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "start";
+        else if (!Bstrcmp("backspace",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "R1";
+        else if (!Bstrcmp("tab",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "L1";
+        else if (!Bstrcmp("page down",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "R2";
+        else if (!Bstrcmp("page up",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "L2";
+        else if (!Bstrcmp("[.]",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "R3";
+        else if (!Bstrcmp("[/]",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "L3";
+        else if (!Bstrcmp("left ctrl",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "Button A";
+        else if (!Bstrcmp("left alt",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "Button B";
+        else if (!Bstrcmp("space",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "Button X";
+        else if (!Bstrcmp("left shift",g_keyNameTable[i]))
+            MEOSN_Keys[i] = "Button Y";
+    #ifdef __RETROFW__
+        else if (!Bstrcmp("End",g_keyNameTable[i]))
+    #else
+        else if (!Bstrcmp("Home",g_keyNameTable[i]))
+    #endif
+            MEOSN_Keys[i] = "Power";
+        else
+#endif
         MEOSN_Keys[i] = g_keyNameTable[i];
+#if defined __OPENDINGUX__
+    }
+#endif
     MEOSN_Keys[NUMKEYS-1] = MenuKeyNone;
 
 
@@ -2385,7 +2424,28 @@ static void Menu_Pre(MenuID_t cm)
         MEO_GAMESETUP_DEMOREC.options = (ps->gm&MODE_GAME) ? &MEOS_DemoRec : &MEOS_OffOn;
         MenuEntry_DisableOnCondition(&ME_GAMESETUP_DEMOREC, (ps->gm&MODE_GAME) && ud.m_recstat != 1);
         break;
+        
+#ifdef __OPENDINGUX__
+    case MENU_DISPLAYSETUP:
+        MenuMenu_ChangeEntryList(M_DISPLAYSETUP, MEL_DISPLAYSETUP);
+        MEO_SCREENSETUP_SCREENSIZE.steps = !(ud.statusbarflags & STATUSBAR_NONONE) +
+                                           !(ud.statusbarflags & STATUSBAR_NOMODERN) +
+                                           !(ud.statusbarflags & STATUSBAR_NOMINI) * (ud.statusbarrange + 1) +
+                                           !(ud.statusbarflags & STATUSBAR_NOOVERLAY) +
+                                           !(ud.statusbarflags & STATUSBAR_NOFULL) +
+                                           !(ud.statusbarflags & STATUSBAR_NOSHRINK) * 14;
+        MEO_SCREENSETUP_SCREENSIZE.max = MEO_SCREENSETUP_SCREENSIZE.steps - 1;
+        MenuEntry_DisableOnCondition(&ME_SCREENSETUP_SCREENSIZE, (MEO_SCREENSETUP_SCREENSIZE.steps < 2));
 
+        vpsize = !(ud.statusbarflags & STATUSBAR_NONONE) +
+                 (ud.screen_size >= 4 && !(ud.statusbarflags & STATUSBAR_NOMODERN)) +
+                 (ud.screen_size >= 4 && ud.althud == 0 && !(ud.statusbarflags & STATUSBAR_NOMINI)) * (ud.statusbarcustom + 1) +
+                 (ud.screen_size >= 8 && !(ud.statusbarflags & STATUSBAR_NOOVERLAY)) +
+                 (ud.screen_size >= 8 && ud.statusbarmode == 0 && !(ud.statusbarflags & STATUSBAR_NOFULL)) +
+                 (ud.screen_size > 8 && !(ud.statusbarflags & STATUSBAR_NOSHRINK)) * ((ud.screen_size - 8) >> 2)
+                 -1;
+        break;
+#else
 #ifdef USE_OPENGL
     case MENU_DISPLAYSETUP:
         if (REALITY)
@@ -2461,6 +2521,7 @@ static void Menu_Pre(MenuID_t cm)
 # endif
         break;
 #endif
+#endif // __OPENDINGUX__
 
     case MENU_VIDEOSETUP:
     {
@@ -3920,7 +3981,11 @@ static void Menu_PreInput(MenuEntry_t *entry)
     {
 
     case MENU_KEYBOARDKEYS:
+#ifdef __OPENDINGUX__
+         if (KB_KeyPressed(sc_BackSpace) || KB_KeyPressed(sc_LeftAlt))
+#else
         if (KB_KeyPressed(sc_Delete))
+#endif
         {
             auto *column = (MenuCustom2Col_t*)entry->entry;
             char key[2];
@@ -3929,7 +3994,14 @@ static void Menu_PreInput(MenuEntry_t *entry)
             *column->column[M_KEYBOARDKEYS.currentColumn] = 0xff;
             CONFIG_MapKey(M_KEYBOARDKEYS.currentEntry, ud.config.KeyboardKeys[M_KEYBOARDKEYS.currentEntry][0], key[0], ud.config.KeyboardKeys[M_KEYBOARDKEYS.currentEntry][1], key[1]);
             S_PlaySound(RR ? 335 : KICK_HIT);
+#ifdef __OPENDINGUX__
+            if (KB_KeyPressed(sc_BackSpace))
+                KB_ClearKeyDown(sc_BackSpace);
+            if (KB_KeyPressed(sc_LeftAlt))
+                KB_ClearKeyDown(sc_LeftAlt);
+#else
             KB_ClearKeyDown(sc_Delete);
+#endif
         }
         break;
 
@@ -5736,6 +5808,12 @@ static vec2_t Menu_Text(int32_t x, int32_t y, const MenuFont_t *font, const char
 {
     int32_t s, p, ybetween = font->between.y;
     int32_t f = font->textflags | TEXT_RRMENUTEXTHACK;
+#ifdef __OPENDINGUX__
+    if (RR && ud.setup.xdim < 640 && font == &MF_Minifont)
+        f = font->textflags | TEXT_ODRRHACK;
+    else
+        f = font->textflags & ~TEXT_ODRRHACK;
+#endif
     if (status & MT_XCenter)
         f |= TEXT_XCENTER;
     if (status & MT_XRight)
@@ -5749,6 +5827,10 @@ static vec2_t Menu_Text(int32_t x, int32_t y, const MenuFont_t *font, const char
         f |= TEXT_LITERALESCAPE;
 
     int32_t z = font->zoom;
+#ifdef __OPENDINGUX__
+    if (RR && f & TEXT_ODRRHACK && ud.setup.xdim < 640)
+        z *= 2;
+#endif
 
     if (status & MT_Disabled)
         p = (status & MT_RightSide) ? font->pal_disabled_right : font->pal_disabled;
@@ -5945,6 +6027,11 @@ static int32_t M_RunMenu_Menu(Menu_t *cm, MenuMenu_t *menu, MenuEntry_t *current
                 ++numvalidentries;
 
                 // assumes height == font->get_yline()!
+#ifdef __OPENDINGUX__
+            if (RR && entry->font == &MF_Minifont && ud.setup.xdim < 640)
+                totalheight += entry->getHeight()*2;
+            else
+#endif
                 totalheight += entry->getHeight();
             }
 
@@ -5961,6 +6048,11 @@ static int32_t M_RunMenu_Menu(Menu_t *cm, MenuMenu_t *menu, MenuEntry_t *current
 
             int32_t const height = entry->getHeight();
 
+#ifdef __OPENDINGUX__
+            if (RR && entry->font == &MF_Minifont && ud.setup.xdim < 640)
+                y += height*2;
+            else
+#endif
             y += height;
             totalHeight = y;
             y += (!calculatedentryspacing || calculatedentryspacing > entry->getMarginBottom()) ? entry->getMarginBottom() : calculatedentryspacing;
@@ -6001,7 +6093,14 @@ static int32_t M_RunMenu_Menu(Menu_t *cm, MenuMenu_t *menu, MenuEntry_t *current
                                 0 <= y - menu->scrollPos + entry->font->get_yline() &&
                                 y - menu->scrollPos <= klabs(menu->format->bottomcutoff) - menu->format->pos.y;
 
+#ifdef __OPENDINGUX__
+            int32_t mheight = entry->getHeight();
+            if (RR && entry->font == &MF_Minifont && ud.setup.xdim < 640)
+                mheight *= 2;               
+            int32_t const height = mheight;
+#else
             int32_t const height = entry->getHeight(); // max(textsize.y, entry->font->get_yline()); // bluefont Q ruins this
+#endif
             status |= MT_YCenter;
             int32_t const y_internal = origin.y + y_upper + y + (height>>1) - menu->scrollPos;
 
@@ -6721,7 +6820,14 @@ static void Menu_RunOptionList(Menu_t *cm, MenuEntry_t *entry, MenuOption_t *obj
         bool const dodraw = 0 <= y - object->options->scrollPos + object->options->font->get_yline() &&
                             y - object->options->scrollPos <= object->options->menuFormat->bottomcutoff - object->options->menuFormat->pos.y;
 
+#if __OPENDINGUX__
+        int32_t mheight = object->options->font->get_yline();
+        if (RR && object->options->font == &MF_Minifont && ud.setup.xdim < 640)
+            mheight *= 2;            
+        int32_t const height = mheight;
+#else
         int32_t const height = object->options->font->get_yline(); // max(textsize.y, object->options->font->get_yline());
+#endif
         status |= MT_YCenter;
         int32_t const y_internal = origin.y + y_upper + y + (height>>1) - object->options->scrollPos;
 
