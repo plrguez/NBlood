@@ -27,8 +27,8 @@ you can press 'Start' to confirm the overwrite or 'Select' to cancel.
 Game files
 ----------
 
-Put the game files in the '$HOME/.config/pcexhumed' directory or
-in 'pcexhumed' directory directory at the root of the external SDC card.
+Copy the game data files in the '$HOME/.config/pcexhumed' directory
+or in 'pcexhumed' directory at the root of the external SD Card.
 
 Video
 -----
@@ -36,10 +36,10 @@ Video
 OD port try to detect the resolution to use, if it is not detected then
 320x240 resolution is used.
 
-RetroFW a 320x240 resolution is used by default.
+For RetroFW a 320x240 resolution is used by default.
 
-You can set the video resolution editing the file 
-'$HOME/.config/pcexhumed/pcexhumed.cfg'.
+There is no menu option to change video options. You can set the video
+resolution editing the file '$HOME/.config/pcexhumed/pcexhumed.cfg'.
 
 Sound
 -----
@@ -96,15 +96,37 @@ Default in-game keys:
 
         Show menu                       Select
 
-If joystick axis is detected then by default the left axis is used for moving
-and strafing and right axis for looking up/down and turning on.
+If joystick axises are detected then by default the left axis is used for
+moving and strafing and right axis for looking up/down and turning on.
 
-Mapped keys to game functions is saved in the 
+Mapped keys to game functions are saved in the 
 '$HOME/.config/pcexhumed/pcexhumed_cvars.cfg' file.
 
-If a game funtion is mapped to two different keys then the game funtion is
+If a game function is mapped to two different keys then the game funtion is
 triggered when both keys are pressed at same time.
+
 Keys are the correspond keyboard keys for each device.
+
+	Device/Button			Mapping Key					
+	-------------		    -----------
+	D-Pad Up                Up
+	D-Pad Down              Down
+	D-Pad Left              Left
+	D-Pad Right             Right
+	Button A                LCtrl
+	Button B                LAlt
+	Button Y                LShift
+	Button X                Space
+	L1                      Tab
+	R1                      BakSpc
+	L2                      PgUp
+	R2                      PgDn
+	L3                      Kpad/
+	R3                      Kpad.
+	Select                  Escape
+	Start                   Enter
+	Power                   Home (In OpenDingux)
+	                        End (In RetroFW)
 
 I do not recommend to touch this file if you do not know exactly what to do.
 

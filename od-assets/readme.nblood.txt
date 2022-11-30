@@ -4,14 +4,16 @@ NBlood for OpenDingux Beta (JZ4770/Lepus) and RetroFW 2.3
 Game files
 ----------
 
-Put the game files in the '$HOME/.config/nblood' directory or
-in 'nblood' directory directory at the root of the external SDC card.
+Copy the game data files in the '$HOME/.config/nblood' directory
+or in 'nblood' directory at the root of the external SD Card.
 
 Video
 -----
 
-By default a 320x240 resolution is used.
-You can set the video resolution up to 640x480.
+OD port try to detect the resolution to use, if it is not detected then
+320x240 resolution is used.
+
+For RetroFW a 320x240 resolution is used by default.
 
 Sound
 -----
@@ -81,8 +83,8 @@ Default in-game keys:
 
         Show menu                       Select
 
-If joystick axis is detected then by default the left axis is used for moving
-and strafing and right axis for looking up/down and turning on.
+If joystick axises are detected then by default the left axis is used for
+moving and strafing and right axis for looking up/down and turning on.
 
 Remap keys
 ----------
