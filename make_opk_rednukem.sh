@@ -20,7 +20,7 @@ fi
 
 if [ ${CURRENT_TARGET} == "retrofw" ] ; then
 	GRP_EXTERNAL_DIR="/media/mmcblk1p1/rednukem"
-	GRP_INTERNAL_DIR="/media/home/retrofw/.config/rednukem"
+	GRP_INTERNAL_DIR="/home/retrofw/.config/rednukem"
 else
 	GRP_EXTERNAL_DIR="/media/sdcard/rednukem"
 	GRP_INTERNAL_DIR="/media/data/local/home/.config/rednukem"
